@@ -30,6 +30,33 @@
 \pagestyle{plain}
 
 \section{Introduction}
+The aim of this project is to design a heterogeneous CPU using the RISC-V open source instruction set. Once designed, the CPU should be implementable on an FPGA and be able to run a Debian Linux distro. 
+
+\subsection{Definitions}
+\begin{description}
+    \item[Heterogeneous CPU] A CPU that contains 2 different types of core, mismatched in performance and power consumption.
+    \item[RISC-V ISA] An open-source CPU instruction set architecture.
+    \item[FPGA] A field programmable gate array, an integrated circuit that can be reprogrammed using a hardware description language (HDL).
+\end{description}
+
+\section{Background}
+Designing a CPU is a complex challenge. They need to be power efficient to reduce the cost of running the system, as well as providing adequate processing power when required. Often one is sacrificed to improve the other: for instance, energy efficiency is often reduced due in larger CPU designs. This is because more power has to be supplied to achieve the same performance that a smaller processor could achieve while using less power, due to the reduced size.
+
+A heterogeneous CPU attempts to solve this issue by combining dissimilar core designs; often a powerful core, or p-core, and an efficient core, or e-core. When only light processing is required, the p-core can be effectively shutdown and the e-core will do all processing, resulting in less power used. For heavy processing, the p-core is then used to increase peak performance. Depending on the exact implementation, the p-core can be used either individually or in tandem with the e-core, but both result in greater performance than just the e-core.
+
+\section{Existing Solutions}
+https://ieeexplore.ieee.org/document/8702538
+https://www.mdpi.com/1424-8220/21/19/6491
+https://esp.cs.columbia.edu/
+https://arxiv.org/abs/2206.01901
+
+
+\section{Methods and Resources}
+
+
+\section{Risks and Ethical Considerations}
+
+\section{Timetable}
 
 % \input{introduction.tex}
 % \input{background.tex}
