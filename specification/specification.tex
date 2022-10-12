@@ -99,9 +99,6 @@ The overall objective is design a heterogeneous RISC-V CPU to be used in an SoC 
     \item Intelligently select which core the process will run on, depending on factors such as process priority and resource usage (Could).
 \end{enumerate}
 
-\section{Methods and Resources}
-
-
 \clearpage
 \section{Risks and Ethical Considerations}
 \begin{center}
@@ -121,10 +118,13 @@ The overall objective is design a heterogeneous RISC-V CPU to be used in an SoC 
 \end{center}
 
 There are no ethical considerations for this project.
+\clearpage
 
-\section{Project Management}
+\section{Project Management and Resources}
 Weekly meetings will be held with the Project Supervisor to discuss current progress and any issues that may arise during the project. A project work board will be made and kept updated with tasks to complete, completed work and a log of what is currently in progress. This will be shared with the Project Supervisor and assist in tracking the project over it's lifetime, as well as helping in the creation of the Progress Report.
 
+An Artix A7 FPGA prototyping board is the target FPGA to be used during development, and where the final implementation of the SoC will be tested. \texttt{git} will be used as version control for the continuous development of the hardware description, along with \texttt{GitHub} to store a remote copy of all work completed to ensure the risk of losing progress by hardware malfunction is minimal.
+\clearpage
 \subsection{Timetable}
 \begin{center}
     \begin{table}[htbp!]
@@ -134,23 +134,23 @@ Weekly meetings will be held with the Project Supervisor to discuss current prog
             \hline
             13/10/22 & Finalisation and submission of Project Specification \\
             \hline
-            13/10/22-21/10/22 & Complete research and testing on the capabilities of Rocket Chip generation \\
+            13/10/22 - 21/10/22 & Complete research and testing on the capabilities of Rocket Chip generation \\
             \hline
-            21/10/22-20/11/22 & Create initial design of the heterogeneous CPU and SoC \\
+            21/10/22 - 20/11/22 & Create initial design of the heterogeneous CPU and SoC \\
             \hline
-            20/11/22-10/12/22 & Finalise design of CPU and SoC, begin testing and attempt Linux boot \\
+            20/11/22 - 10/12/22 & Finalise design of CPU and SoC, begin testing and attempt Linux boot \\
             \hline
-            20/11/22-28/11/22 & Write and then submit the combined Project Specification and Progress Report \\
+            20/11/22 - 28/11/22 & Write and then submit the combined Project Specification and Progress Report \\
             \hline
-            10/12/22-15/02/23 & Complete testing and attempted Linux boot, potential research into applications of the designed SoC \\
+            10/12/22 - 15/02/23 & Complete testing and attempted Linux boot, potential research into applications of the designed SoC \\
             \hline
-            15/02/23-6/03/23 & Write project presentation \\
+            15/02/23 - 6/03/23 & Write project presentation \\
             \hline
             6/03/23 & Present the project outcomes and demonstrate work \\
             \hline
-            6/03/23-15/04/23 & Completion of first draft of Final Report \\
+            6/03/23 - 15/04/23 & Completion of first draft of Final Report \\
             \hline
-            15/04/23-2/05/23 & Finalisation and submission of the Final Report \\
+            15/04/23 - 2/05/23 & Finalisation and submission of the Final Report \\
             \hline
         \end{tabularx}
     \end{table}
@@ -161,8 +161,7 @@ Weekly meetings will be held with the Project Supervisor to discuss current prog
 % \input{progress.tex}
 % \input{project-management.tex}
 
-
-%\bibliographystyle{../common/plainnat}
-%\bibliography{../common/bibliography}
+\bibliographystyle{ieeetr}
+\bibliography{../common/bibliography}
 
 \end{document}
