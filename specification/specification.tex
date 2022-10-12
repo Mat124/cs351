@@ -1,5 +1,7 @@
 \documentclass[a4paper,fleqn,11pt]{article}
 \usepackage{tabularx}
+\usepackage{pdflscape}
+\usepackage{rotating}
 
 %%%%%%%%%%%%%%%%%%%%
 
@@ -25,6 +27,8 @@
 \newcolumntype{b}{X}
 \newcolumntype{s}{>{\hsize=.5\hsize}X}
 
+\setcitestyle{square}
+
 %%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
@@ -34,7 +38,11 @@
 \pagestyle{plain}
 
 \section{Introduction}
-The aim of this project is to design a heterogeneous CPU using the RISC-V open source instruction set. Once designed, the CPU should be implementable on an FPGA and be able to run a Debian Linux distro. 
+The aim of this project is to design a heterogeneous CPU using the RISC-V open source instruction set. Once designed, the CPU should be implementable on an FPGA and be able to run a Debian Linux distro.
+
+Designing a CPU is a complex challenge. They need to be power efficient to reduce the cost of running the system, as well as providing adequate processing power when required. Often one is sacrificed to improve the other: for instance, energy efficiency is often reduced due in larger CPU designs. Due to the increased size and complexity, more power has to be supplied to achieve the same performance as a smaller processor.
+
+A heterogeneous CPU attempts to solve this issue by combining dissimilar core designs; often a powerful core, or p-core, and an efficient core, or e-core. When only light processing is required, the p-core can be effectively shutdown and the e-core will do all processing, resulting in less power used. For heavy processing, the p-core is then used to increase peak performance. Depending on the exact implementation, the p-core can be used either individually or in tandem with the e-core, but both result in greater performance than just the e-core.
 
 \subsection{Definitions}
 \begin{description}
@@ -45,12 +53,8 @@ The aim of this project is to design a heterogeneous CPU using the RISC-V open s
 \end{description}
 
 \section{Background}
-\subsection{Motivations for a heterogeneous CPU}
-Designing a CPU is a complex challenge. They need to be power efficient to reduce the cost of running the system, as well as providing adequate processing power when required. Often one is sacrificed to improve the other: for instance, energy efficiency is often reduced due in larger CPU designs. Due to the increased size and complexity, more power has to be supplied to achieve the same performance as a smaller processor.
-
-A heterogeneous CPU attempts to solve this issue by combining dissimilar core designs; often a powerful core, or p-core, and an efficient core, or e-core. When only light processing is required, the p-core can be effectively shutdown and the e-core will do all processing, resulting in less power used. For heavy processing, the p-core is then used to increase peak performance. Depending on the exact implementation, the p-core can be used either individually or in tandem with the e-core, but both result in greater performance than just the e-core.
-
-This has been used extensively in many mobile devices. ARM released the big.LITTLE in 2011\cite{biglittle}, a mobile heterogeneous architecture. The architecture provides the low power usage needed in mobile devices the majority of the time when idle, only running tasks like checking for new messages. It also provides the high performance that can be demanded from phones when used to browse the internet, play mobile games, etc. Most big.LITTLE designs use HMP (heterogeneous multiprocessing) where all cores are available to have processes assigned to them at all times. The alternatives to this are: clustered switching, where either the big cores or the LITTLE cores are in use, and in-kernel switching, where big and LITTLE cores are paired to form a virtual core and only one performs the tasks assigned to the virtual core at any one time.
+\subsection{Example heterogeneous CPU: big.LITTLE}
+ARM released big.LITTLE in 2011\cite{biglittle}, a mobile heterogeneous architecture. The architecture provides the low power usage needed in mobile devices the majority of the time when idle, only running tasks like checking for new messages. It also provides the high performance that can be demanded from phones when used to browse the internet, play mobile games, etc. Most big.LITTLE designs use HMP (heterogeneous multiprocessing) where all cores are available to have processes assigned to them at all times. The alternatives to this are: clustered switching, where either the big cores or the LITTLE cores are in use, and in-kernel switching, where big and LITTLE cores are paired to form a virtual core and only one performs the tasks assigned to the virtual core at any one time.
 
 \subsection{The RISC-V ISA}
 The RISC-V ISA\cite{riscvISA} is an open-source instruction set for the design of a CPU, defining the behaviour of the CPU. By defining just behaviour, the actual implementation of the instructions are left to the designer and allow for characteristics like performance, size and more to vary from CPU to CPU. In addition to this, the ISA has extensions and different base options so that a CPU can be tailored to fit an exact use case where only necessary instructions are implemented.
@@ -65,35 +69,35 @@ Rocket Chip\cite{rocketchip} is a generator for SoCs, capable of producing many 
 
 Cores and their organisation are the main interest of this project, and Rocket Chip provides a large range of options. Rocket Chip can generate two types of RV64GC core: BOOM\cite{zhaosonicboom} and Rocket. The BOOM cores contain out-of-order execution pipelines, allowing for more efficient processing of instructions. The Rocket cores are simpler, with in-order pipelines. Both BOOM and Rocket cores have optional FPUs, configurable branch predictors and options for extra ISA extensions. The base Rocket Chip generator allows for combinations of BOOM and Rocket cores to be implemented on a single SoC, including heterogeneous designs such as a BOOM and Rocket core together. 
 
+\subsubsection{Chipyard}
+Chipyard\cite{chipyard} is an SoC design framework, and an alternative to Rocket Chip. Chipyard provides more options for adding accelerators, as well as more options for types of host core, including non-RISC options. The framework directly allows different types of core to be implemented in one SoC and are combined together using the Constellation interconnect for highly irregular architectures.
+
 \subsection{Other Designs}
 Most existing heterogeneous solutions appear to comprise of a 'host' processor and an accelerator, where the host processor is constantly running and offloads tasks to the accelerator when needed. This is different to the aim of this project, where the cores are of equal standing and both could be used individually. A brief summary of these works can be seen below.
 
+\begin{sidewaystable}
 \begin{center}
-    \begin{table}[htbp!]
-        \begin{tabularx}{\textwidth}{sb}
+        \begin{tabularx}{\textwidth}{ssssb}
             \hline
-            Title & Description \\
+            Title & Core     Organisation & Application & Implementation & Comments \\
             \hline
-            A RISC-V Heterogeneous SoC for Embedded Devices\cite{valenterisc} & A 64-bit RISC-V host core that offloads tasks to a PMCA (Programmable ManyCore Accelerator) made from 8 32-bit RISC-V cores. Implements two types of RISC-V core in a single SoC, but one is used as an accelerator for the other as opposed to them being of equal standing. \\
+            A RISC-V Heterogeneous SoC for Embedded Devices\cite{valenterisc}. & Heterogeneous CVA6 core\cite{zaruba2019cost} with 32-bit RISC-V core. & Linux-capable for ML/DSP workloads. & Implemented on a Xilinx VCU118 with plans for produced IC on 22nm. & Early in development stage, but has a successful heterogeneous design and is Linux-capable. Still a host-accelerator combination that is less flexible than equal cores. \\
             \hline
-            Muntjac multicore RV64 processor\cite{UCAM-CL-TR-972} & A open-source component collection used to build multicore, Linux-capable SoCs designed to be extendable for future development. This uses a single type of RV64 core and uses the Rocket Chip TileLink system. \\
+            Muntjac multicore RV64 processor\cite{UCAM-CL-TR-972}. & Homogeneous RV64GC multicore. & Linux-capable base to enable specialised designs. & Implemented on Xilinx Kintex 7. & Aims to be easily understood and extendable - a great starting point for development of specialised designs. Limited to only one type of core in base repository, but contains interconnect for other designs. \\
             \hline
-            BlackParrot\cite{blackparrot} & A linux-capable multicore RISC-V system, aimed at being a host for accelerator chips. Allows for SMP (Simultaneous Multi-Processing) inside of Linux with the cores 'tiled' such that they can be swapped out and the amount easily changed. \\
-            \hline
-            Chipyard\cite{chipyard} & An alternative to Rocket Chip that also provides the functionality to create custom SoCs with RISC-V cores. Chipyard provides more options for adding accelerators, as well as more options for types of RISC-V core and directly allows different types of core to be implemented in one SoC. \\
+            BlackParrot\cite{blackparrot} & Homogeneous RV64G multicore. & Linux-capable general purpose processor. & Implemented on an IC at 12nm. & A general purpose RISC-V multicore. Implicitly allows heterogeneous CPU by hiding the multicore components beneath an ISA layer and allows easy extensions by keeping the design tiny, modular and friendly. \\
             \hline
         \end{tabularx}
-    \end{table}
 \end{center}
+\end{sidewaystable}
 
 \clearpage
-
 \section{Objectives}
 The overall objective is design a heterogeneous RISC-V CPU to be used in an SoC that can run Linux and use both cores to improve peak performance and power efficiency. While this is the overarching goal, it can be broken down into smaller objectives. These objectives have been labelled with each labelled as Must, Should or Could to indicate their importance and expected completion.
 \begin{enumerate}
-    \item Design a heterogeneous RISC-V SoC containing 2 dissimilar cores, each capable of executing at least the RV64GC instruction set (Must).
+    \item Design a heterogeneous RISC-V SoC containing 2 dissimilar cores, each capable of executing at least the RV64G instruction set (Must).
     \item Execute instructions on both cores when implemented in an SoC on an FPGA (Must).
-    \item Have comparable performance to an SoC with only 1 of the larger cores. (Must)
+    \item Have comparable performance to an SoC with only 1 of the larger cores. (Should)
     \item Run Linux on the previously designed SoC and connect to it via SSH (Should).
     \item Allow processes to execute on both cores inside of Linux - SMP (Could).
     \item Intelligently select which core the process will run on, depending on factors such as process priority and resource usage (Could).
