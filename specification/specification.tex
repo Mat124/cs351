@@ -1,4 +1,5 @@
 \documentclass[a4paper,fleqn,11pt]{article}
+\usepackage{tabularx}
 
 %%%%%%%%%%%%%%%%%%%%
 
@@ -21,6 +22,9 @@
 }
 \makeatother
 
+\newcolumntype{b}{X}
+\newcolumntype{s}{>{\hsize=.5\hsize}X}
+
 %%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
@@ -41,69 +45,124 @@ The aim of this project is to design a heterogeneous CPU using the RISC-V open s
 \end{description}
 
 \section{Background}
-Designing a CPU is a complex challenge. They need to be power efficient to reduce the cost of running the system, as well as providing adequate processing power when required. Often one is sacrificed to improve the other: for instance, energy efficiency is often reduced due in larger CPU designs. This is because more power has to be supplied to achieve the same performance that a smaller processor could achieve while using less power, due to the reduced size.
+\subsection{Motivations for a heterogeneous CPU}
+Designing a CPU is a complex challenge. They need to be power efficient to reduce the cost of running the system, as well as providing adequate processing power when required. Often one is sacrificed to improve the other: for instance, energy efficiency is often reduced due in larger CPU designs. Due to the increased size and complexity, more power has to be supplied to achieve the same performance as a smaller processor.
 
 A heterogeneous CPU attempts to solve this issue by combining dissimilar core designs; often a powerful core, or p-core, and an efficient core, or e-core. When only light processing is required, the p-core can be effectively shutdown and the e-core will do all processing, resulting in less power used. For heavy processing, the p-core is then used to increase peak performance. Depending on the exact implementation, the p-core can be used either individually or in tandem with the e-core, but both result in greater performance than just the e-core.
 
-This has been used extensively in many mobile devices. ARM released the big.LITTLE in 2011, the first mobile heterogeneous architecture. The architecture provides the low power usage needed in mobile devices the majority of the time when idle, only running tasks like checking for new messages. It also provides the high performance that can be demanded from phones when used to browse the internet, play mobile games, etc. Most big.LITTLE designs use HMP (heterogeneous multiprocessing) where all cores are available to have processes assigned to them at all times. The alternatives to this are: clustered switching, where either the big cores or the LITTLE cores are in use, and in-kernel switching, where big and LITTLE cores are paired to form a virtual core and only one performs the tasks assigned to the virtual core at any one time.
+This has been used extensively in many mobile devices. ARM released the big.LITTLE in 2011\cite{biglittle}, a mobile heterogeneous architecture. The architecture provides the low power usage needed in mobile devices the majority of the time when idle, only running tasks like checking for new messages. It also provides the high performance that can be demanded from phones when used to browse the internet, play mobile games, etc. Most big.LITTLE designs use HMP (heterogeneous multiprocessing) where all cores are available to have processes assigned to them at all times. The alternatives to this are: clustered switching, where either the big cores or the LITTLE cores are in use, and in-kernel switching, where big and LITTLE cores are paired to form a virtual core and only one performs the tasks assigned to the virtual core at any one time.
+
+\subsection{The RISC-V ISA}
+The RISC-V ISA\cite{riscvISA} is an open-source instruction set for the design of a CPU, defining the behaviour of the CPU. By defining just behaviour, the actual implementation of the instructions are left to the designer and allow for characteristics like performance, size and more to vary from CPU to CPU. In addition to this, the ISA has extensions and different base options so that a CPU can be tailored to fit an exact use case where only necessary instructions are implemented.
+
+Some of the RISC-V implementations using correct base and extension options are also able to run versions of Linux. The RV64GC configuration is an example of this, with the Debian distribution\cite{debianriscv} offering versions that directly support systems using RISC-V processors that meet that minimum configuration. In addition to this, around 95\% of the packages available on the Debian OS can be built on a RISC-V machine, allowing such a system to be used for general computing to some extent.
+
+The majority of use cases for RISC-V are currently embedded and highly specialised systems such as compute accelerators for tasks like artificial intelligence, neural networks and image processing. General purpose use of RISC-V is not currently widespread, and design of general purpose RISC-V processors is a developing area.
 
 \section{Existing Solutions}
-https://ieeexplore.ieee.org/document/8702538 - Low Energy Heterogeneous Computing with Multiple RISC-V and CGRA Cores. This implements only a single type of RISC-V core which then uses a CGRA (Coarse-grained reconfigurable array) as an accelerator in certain tasks. This is dissimilar to what the project is proposing.
+\subsection{Rocket Chip generator}
+Rocket Chip\cite{rocketchip} is a generator for SoCs, capable of producing many different configurations and designs of RISC-V based SoCs for use in simulation and implementation in FPGAs and VLSI (Very-large-scale integration, creation of an IC of a design). The Rocket Chip generator creates RTL code in Chisel, a hardware description language based on Scala. To create a new SoC, a configuration is written in Scala to describe the features of the SoC, such as cores, cache, tiling (organisation) and peripheral connections. 
 
-https://www.mdpi.com/1424-8220/21/19/6491 - A Heterogeneous RISC-V Processor for Efficient DNN Application in Smart Sensing System. This is similar to the above, where a RISC-V core is used as the host to an accelerator designed for specific workloads. This is also dissimilar to what the project is proposing.
+Cores and their organisation are the main interest of this project, and Rocket Chip provides a large range of options. Rocket Chip can generate two types of RV64GC core: BOOM\cite{zhaosonicboom} and Rocket. The BOOM cores contain out-of-order execution pipelines, allowing for more efficient processing of instructions. The Rocket cores are simpler, with in-order pipelines. Both BOOM and Rocket cores have optional FPUs, configurable branch predictors and options for extra ISA extensions. The base Rocket Chip generator allows for combinations of BOOM and Rocket cores to be implemented on a single SoC, including heterogeneous designs such as a BOOM and Rocket core together. 
 
-https://arxiv.org/abs/2206.01901 - Enabling Heterogeneous, Multicore SoC Research with RISC-V and ESP. An extension to the ESP (Embedded Scalable Platform) project to enable the creation of an SoC with multiple RISC-V cores. This does not allow the creation of an SoC with different types of RISC-V core, but does implement some of the functions required for this and so could potentially be extended to allow for dissimilar RISC-V cores implemented in a single SoC.
+\subsection{Other Designs}
+Most existing heterogeneous solutions appear to comprise of a 'host' processor and an accelerator, where the host processor is constantly running and offloads tasks to the accelerator when needed. This is different to the aim of this project, where the cores are of equal standing and both could be used individually. A brief summary of these works can be seen below.
 
-https://open-src-soc.org/2022-05/media/posters/4th-RISC-V-Meeting-2022-05-03-Luca-Valente-poster-abstract.pdf - 64-bit RISC-V host core running Linux that offloads tasks to a PMCA (Programmable ManyCore Accelerator) made of 8 32-bit RISC-V cores. This is the most similar work I could find to the aim of the project, but differs by having the smaller RISC-V cores as accelerators as opposed to linux-capable, indepedent cores.
+\begin{center}
+    \begin{table}[htbp!]
+        \begin{tabularx}{\textwidth}{sb}
+            \hline
+            Title & Description \\
+            \hline
+            A RISC-V Heterogeneous SoC for Embedded Devices\cite{valenterisc} & A 64-bit RISC-V host core that offloads tasks to a PMCA (Programmable ManyCore Accelerator) made from 8 32-bit RISC-V cores. Implements two types of RISC-V core in a single SoC, but one is used as an accelerator for the other as opposed to them being of equal standing. \\
+            \hline
+            Muntjac multicore RV64 processor\cite{UCAM-CL-TR-972} & A open-source component collection used to build multicore, Linux-capable SoCs designed to be extendable for future development. This uses a single type of RV64 core and uses the Rocket Chip TileLink system. \\
+            \hline
+            BlackParrot\cite{blackparrot} & A linux-capable multicore RISC-V system, aimed at being a host for accelerator chips. Allows for SMP (Simultaneous Multi-Processing) inside of Linux with the cores 'tiled' such that they can be swapped out and the amount easily changed. \\
+            \hline
+            Chipyard\cite{chipyard} & An alternative to Rocket Chip that also provides the functionality to create custom SoCs with RISC-V cores. Chipyard provides more options for adding accelerators, as well as more options for types of RISC-V core and directly allows different types of core to be implemented in one SoC. \\
+            \hline
+        \end{tabularx}
+    \end{table}
+\end{center}
 
-Most existing heterogeneous solutions appear to comprise of a 'host' processor and an accelerator, where the host processor is constantly running and offloads tasks to the accelerator when needed. This is different to the aim of this project, where the cores are of equal standing and both could be used individually. Multicore RISC-V SoCs that implement SMP in Linux are most similar to my objectives - this is essentially what the aims are, with the extra of the cores being two different types and performance levels.
+\clearpage
 
 \section{Objectives}
-The overall objective is design a heterogeneous RISC-V CPU to be used in an SoC that can run Linux and use both cores to improve peak performance and power efficiency. While this is the overarching goal, it can be broken down into smaller objectives.
+The overall objective is design a heterogeneous RISC-V CPU to be used in an SoC that can run Linux and use both cores to improve peak performance and power efficiency. While this is the overarching goal, it can be broken down into smaller objectives. These objectives have been labelled with each labelled as Must, Should or Could to indicate their importance and expected completion.
 \begin{enumerate}
-    \item Design a heterogeneous RISC-V SoC containing 2 dissimilar cores, capable of executing at least the RV64I instruction set.
-    \item Run Linux on the previously designed SoC and connect to it via SSH.
-    \item Allow processes to execute on both cores inside of Linux.
-    \item Intelligently select which core the process will run on, depending on factors such as process priority and resource usage.
-    \item Allow both cores to simultaneously execute processes when required.
-    \item Have comparable or better performance per watt than an SoC with only 1 of the larger cores.
+    \item Design a heterogeneous RISC-V SoC containing 2 dissimilar cores, each capable of executing at least the RV64GC instruction set (Must).
+    \item Execute instructions on both cores when implemented in an SoC on an FPGA (Must).
+    \item Have comparable performance to an SoC with only 1 of the larger cores. (Must)
+    \item Run Linux on the previously designed SoC and connect to it via SSH (Should).
+    \item Allow processes to execute on both cores inside of Linux - SMP (Could).
+    \item Intelligently select which core the process will run on, depending on factors such as process priority and resource usage (Could).
 \end{enumerate}
 
 \section{Methods and Resources}
-https://esp.cs.columbia.edu/ - open source SoC platform, can be used to develop heterogeneous CPU architectures (not RISC-V specific). This allows accelerators and host cores to be implemented together, but does not allow the creation of an SoC with more than 1 type of core, or even multi-core RISC-V SoCs without the extension listed previously. I believe this platform is therefore unsuitable for use in my project due to the large number of changes required and the limited time available for my project.
 
-https://github.com/ucb-bar/chipyard - Chipyard is an open source framework for the development of chisel-based SoC's. It allows the creation of multi-core RISC-V SoCs with various core types, including allowing multiple types of core to be implemented together on the same SoC. Chipyard designs that meet the minimum specifications for the Linux kernel are also able to run Linux once loaded onto an FPGA, but only certain types of board are supported. It is also unclear whether the heterogeneous designs made using Chipyard would be able to run Linux, as I have been unable to find any examples of heterogeneous RISC-V CPU running Linux.
 
-https://github.com/eugene-tarassov/vivado-risc-v - Scripts and sources to design a various RISC-V SoCs that can run Linux. Allows for various designs of multicore RISC-V systems, featuring Rocket cores (https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-17.html) and BOOM cores (https://github.com/riscv-boom/riscv-boom). The base configuration options given do not support heterogeneous RISC-V SoC, but the project is based on the Rocket Chip generator. This directly supports heterogenous processing at various levels. The Rocket Custom Coprocessor (RoCC) interface is used primarily for application specific coprocessors. Tile and TileLink are 
-generators multiple processor agents, with options for coherence, shared memory and shared networks.
-
-The development of the Linux-capable heterogeneous RISC-V CPU will most likely be done by modifying
-
+\clearpage
 \section{Risks and Ethical Considerations}
 \begin{center}
-    \begin{tabular}{|c|c|c|c|}
-        \hline
-        Risk & Risk Description & Mitigation & Risk level \\
-        \hline
-        FPGA is too small & As the design for the SoC grows larger and more complex, it will require a greater amount of LUTs. This may result in a larger design than the FPGA to be used can implement. & This risk could be mitigated by purchasing a larger FPGA, or by reducing the complexity of the design and objectives. & High \\
-        \hline
-        Student is unable to work & Either by illness or other matters, the student is unable to continue work on the project for an extended period. & Mitigating this risk is difficult as illness cannot be predicted, but the likelihood of this occurring is very low. & Low \\
-        \hline
-        Concept is flawed/impossible/too difficult & As the project progresses, it appears that the main objectives of the project cannot be completed either at all, or in the time-frame provided. & The objectives and scope of the project can be changed/reduced in order to produce a full piece of work by the deadline. & Low \\
-    \end{tabular}
+    \begin{table}[htbp!]
+        \begin{tabularx}{\textwidth}{sbbs}
+            \hline
+            Risk & Risk Description & Mitigation & Risk level \\
+            \hline
+            FPGA is too small & As the design for the SoC grows larger and more complex, it will require a greater amount of LUTs. This may result in a larger design than the FPGA to be used can implement. & This risk could be mitigated by purchasing a larger FPGA, or by reducing the complexity of the design and objectives. & High \\
+            \hline
+            Student is unable to work & Either by illness or other matters, the student is unable to continue work on the project for an extended period. & Mitigating this risk is difficult as illness cannot be predicted, but the likelihood of this occurring is very low. & Low \\
+            \hline
+            Concept is flawed/ impossible/ too difficult & As the project progresses, it appears that the main objectives of the project cannot be completed either at all, or in the time-frame provided. & The objectives and scope of the project can be changed/reduced in order to produce a full piece of work by the deadline. & Low \\
+            \hline
+        \end{tabularx}
+    \end{table}
 \end{center}
 
 There are no ethical considerations for this project.
 
-\section{Timetable}
-I'll make a gantt chart and put it here.
+\section{Project Management}
+Weekly meetings will be held with the Project Supervisor to discuss current progress and any issues that may arise during the project. A project work board will be made and kept updated with tasks to complete, completed work and a log of what is currently in progress. This will be shared with the Project Supervisor and assist in tracking the project over it's lifetime, as well as helping in the creation of the Progress Report.
+
+\subsection{Timetable}
+\begin{center}
+    \begin{table}[htbp!]
+        \begin{tabularx}{\textwidth}{sb}
+            \hline
+            Date & Objective \\
+            \hline
+            13/10/22 & Finalisation and submission of Project Specification \\
+            \hline
+            13/10/22-21/10/22 & Complete research and testing on the capabilities of Rocket Chip generation \\
+            \hline
+            21/10/22-20/11/22 & Create initial design of the heterogeneous CPU and SoC \\
+            \hline
+            20/11/22-10/12/22 & Finalise design of CPU and SoC, begin testing and attempt Linux boot \\
+            \hline
+            20/11/22-28/11/22 & Write and then submit the combined Project Specification and Progress Report \\
+            \hline
+            10/12/22-15/02/23 & Complete testing and attempted Linux boot, potential research into applications of the designed SoC \\
+            \hline
+            15/02/23-6/03/23 & Write project presentation \\
+            \hline
+            6/03/23 & Present the project outcomes and demonstrate work \\
+            \hline
+            6/03/23-15/04/23 & Completion of first draft of Final Report \\
+            \hline
+            15/04/23-2/05/23 & Finalisation and submission of the Final Report \\
+            \hline
+        \end{tabularx}
+    \end{table}
+\end{center}
 
 % \input{introduction.tex}
 % \input{background.tex}
 % \input{progress.tex}
 % \input{project-management.tex}
 
-\bibliographystyle{../common/plainnat}
-\bibliography{../common/bibliography}
+
+%\bibliographystyle{../common/plainnat}
+%\bibliography{../common/bibliography}
 
 \end{document}
