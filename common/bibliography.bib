@@ -1,10 +1,83 @@
-@article{hughes1989functional,
-  title={Why functional programming matters},
-  author={Hughes, John},
-  journal={The computer journal},
-  volume={32},
-  number={2},
-  pages={98--107},
-  year={1989},
-  publisher={Oxford University Press}
+@TechReport{UCAM-CL-TR-972,
+  author =	 {Guo, Xuan and Bates, Daniel and Mullins, Robert and
+          	  Bradbury, Alex},
+  title = 	 {{Muntjac multicore RV64 processor: introduction and
+         	   microarchitectural guide}},
+  year = 	 2022,
+  month = 	 jun,
+  url = 	 {https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-972.pdf},
+  institution =  {University of Cambridge, Computer Laboratory},
+  doi = 	 {10.48456/tr-972},
+  number = 	 {UCAM-CL-TR-972}
+}
+@article{chipyard,
+  author={Amid, Alon and Biancolin, David and Gonzalez, Abraham and Grubb, Daniel and Karandikar, Sagar and Liew, Harrison and Magyar,   Albert and Mao, Howard and Ou, Albert and Pemberton, Nathan and Rigge, Paul and Schmidt, Colin and Wright, John and Zhao, Jerry and Shao, Yakun Sophia and Asanovic, Krste and Nikolic, Borivoje},
+  journal={IEEE Micro},
+  title={Chipyard: Integrated Design, Simulation, and Implementation Framework for Custom SoCs},
+  year={2020},
+  volume={40},
+  number={4},
+  pages={10-21},
+  doi={10.1109/MM.2020.2996616},
+  ISSN={1937-4143},
+}
+@article{blackparrot,
+  author          = {D. Petrisko, F. Gilani, M. Wyse, D. C. Jung, S. Davidson, P. Gao, C. Zhao, Z. Azad, S. Canakci, B. Veluri, T. Guarino, A. J. Joshi, M. Oskin, M. B. Taylor},
+  journal         = {IEEE Micro},
+  title           = {BlackParrot: An Agile Open Source RISC-V Multicore for Accelerator SoCs},
+  year            = {2020},
+  doi             = {10.1109/MM.2020.2996145}
+}
+@misc{valenterisc,
+  title={A RISC-V Heterogeneous SoC for Embedded Devices},
+  author={Valente, Luca and Sinigaglia, Mattia and Tortorella, Yvan and Rossi, Davide and Benini, Luca},
+  howpublished = {\url{https://open-src-soc.org/2022-05/media/posters/4th-RISC-V-Meeting-2022-05-03-Luca-Valente-poster-abstract.pdf}}
+}
+@techreport{rocketchip,
+    Author = {Asanović, Krste and Avizienis, Rimas and Bachrach, Jonathan and Beamer, Scott and Biancolin, David and Celio, Christopher and Cook, Henry and Dabbelt, Daniel and Hauser, John and Izraelevitz, Adam and Karandikar, Sagar and Keller, Ben and Kim, Donggyu and Koenig, John and Lee, Yunsup and Love, Eric and Maas, Martin and Magyar, Albert and Mao, Howard and Moreto, Miquel and Ou, Albert and Patterson, David A. and Richards, Brian and Schmidt, Colin and Twigg, Stephen and Vo, Huy and Waterman, Andrew},
+    Title = {The Rocket Chip Generator},
+    Institution = {EECS Department, University of California, Berkeley},
+    Year = {2016},
+    Month = {Apr},
+    URL = {http://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-17.html},
+    Number = {UCB/EECS-2016-17},
+    Abstract = {Rocket Chip is an open-source Sysem-on-Chip design generator that emits synthesizable RTL. It leverages the Chisel hardware construction language to compose a library of sophisticated generators for cores, caches, and interconnects into an integrated SoC. Rocket Chip generates general-purpose processor cores that use the open RISC-V ISA, and provides both an in-order core generator (Rocket) and an out-of-order core generator (BOOM). For SoC designers interested in utilizing heterogeneous specialization for added efficiency gains, Rocket Chip supports the integration of custom accelerators in the form of instruction set extensions, coprocessors, or fully independent novel cores. Rocket Chip has been taped out (manufactured) eleven times, and yielded functional silicon prototypes capable of booting Linux.}
+}
+@article{zhaosonicboom,
+  title={SonicBOOM: The 3rd Generation Berkeley Out-of-Order Machine},
+  author={Zhao, Jerry and Korpan, Ben and Gonzalez, Abraham and Asanovic, Krste},
+  booktitle={Fourth Workshop on Computer Architecture Research with RISC-V},
+  year={2020},
+  journal = {},
+  month={May}
+}
+@misc{biglittle,
+  author       = {ARM Ltd.},
+  howpublished = {\url{https://web.archive.org/web/20121022055646/http://www.arm.com/products/processors/technologies/bigLITTLEprocessing.php}},
+  title        = {big.LITTLE Processing},
+  year         = {2011}
+}
+@manual{riscvISA,
+  author       = {RISC-V Foundation},
+  editors      = {Andrew Waterman and Krste Asanovic},
+  title        = {The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Document Version 2.2},
+  year         = {2017}
+}
+@misc{debianriscv,
+  author       = {Manuel A. Fernandez Montecelo, Karsten Merker},
+  howpublished = {\url{https://wiki.debian.org/RISC-V}},
+  title        = {RISC-V - Debian},
+  year         = {2021}
+}
+@article{zaruba2019cost,
+   author={F. {Zaruba} and L. {Benini}},
+   journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
+   title={The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology},
+   year={2019},
+   volume={27},
+   number={11},
+   pages={2629-2640},
+   doi={10.1109/TVLSI.2019.2926114},
+   ISSN={1557-9999},
+   month={Nov},
 }
