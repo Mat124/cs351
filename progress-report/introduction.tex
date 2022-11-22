@@ -14,7 +14,10 @@ This has been used extensively in many mobile devices. ARM released the big.LITT
 A 64-bit RISC-V host core that offloads tasks to a PMCA (Programmable ManyCore Accelerator) made from 8 32-bit RISC-V cores. Implements two types of RISC-V core in a single SoC, but one is used as an accelerator for the other as opposed to them being of equal standing.
 
 \subsubsection{Muntjac multicore RV64 processor}
+Homogeneous RV64GC multicore. & Linux-capable base to enable specialised designs. & Implemented on Xilinx Kintex 7. & Aims to be easily understood and extendable - a great starting point for development of specialised designs. Limited to only one type of core in base repository, but contains interconnect for other designs.
 
+\subsubsection{BlackParrot\cite{blackparrot}}
+Homogeneous RV64G multicore. & Linux-capable general purpose processor. & Implemented on an IC at 12nm. & A general purpose RISC-V multicore. Implicitly allows heterogeneous CPU by hiding the multicore components beneath an ISA layer and allows easy extensions by keeping the design tiny, modular and friendly. Heterogeneous designs are limited to those that share the exact same instruction set, so wouldn't allow RV32 and RV64 in a single processor.
 
 \subsection{Objectives}
 %One sentence summary of your project. Followed by a short list of concrete objectives:
@@ -23,8 +26,8 @@ The overall aim is design a heterogeneous SoC containing two types of RISC-V cor
 \begin{enumerate}
     \item Design a heterogeneous RISC-V SoC containing 2 dissimilar cores, each capable of executing at least the RV64 instruction set (Must).
     \item Execute instructions on both cores when implemented in an SoC on an FPGA (Must).
-    \item Measure the performance of the SoC for comparison against single-core designs. (Must)
-    \item Run Linux on the SoC and connect to it via SSH (Could).
-    \item Allow processes to execute on both cores inside of Linux (Could).
+    \item Measure the performance of the SoC for comparison against single-core designs. (Should)
+    \item Run embedded Linux on the SoC and connect to it via serial or SSH (Could).
+    \item Allow processes to execute on both cores inside of embedded Linux (Could).
     \item Intelligently select which core the process will run on, depending on factors such as process priority and resource usage (Won't).
 \end{enumerate}
