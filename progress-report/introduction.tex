@@ -9,6 +9,7 @@ A heterogeneous CPU attempts to solve this issue by combining dissimilar core de
 This has been used extensively in many mobile devices. ARM released the big.LITTLE in 2011\cite{biglittle}, a mobile heterogeneous architecture. The architecture provides the low power usage needed in mobile devices the majority of the time when idle, only running tasks like checking for new messages. It also provides the high performance that can be demanded from phones when used to browse the internet, play mobile games, etc. Most big.LITTLE designs use HMP (heterogeneous multiprocessing) where all cores are available to have processes assigned to them at all times. The alternatives to this are: clustered switching, where either the big cores or the LITTLE cores are in use, and in-kernel switching, where big and LITTLE cores are paired to form a virtual core and only one performs the tasks assigned to the virtual core at any one time.
 
 \subsection{Related work}
+TODO: To be updated - mostly copied from specification
 %Discuss related work.
 \subsubsection{A RISC-V Heterogeneous SoC for Embedded Devices}
 A 64-bit RISC-V host core that offloads tasks to a PMCA (Programmable ManyCore Accelerator) made from 8 32-bit RISC-V cores. Implements two types of RISC-V core in a single SoC, but one is used as an accelerator for the other as opposed to them being of equal standing.
