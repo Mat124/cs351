@@ -32,5 +32,9 @@
                 "%DOCFILE%"
             ]
         }
+    ],
+    "cSpell.words": [
+        "behaviours",
+        "virtualisation"
     ]
 }
