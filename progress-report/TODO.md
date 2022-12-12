@@ -1,0 +1,1 @@
+3.2 demonstrate what has been done - image of linux booting

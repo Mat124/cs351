@@ -43,13 +43,17 @@
     Number = {UCB/EECS-2016-17},
     Abstract = {Rocket Chip is an open-source Sysem-on-Chip design generator that emits synthesizable RTL. It leverages the Chisel hardware construction language to compose a library of sophisticated generators for cores, caches, and interconnects into an integrated SoC. Rocket Chip generates general-purpose processor cores that use the open RISC-V ISA, and provides both an in-order core generator (Rocket) and an out-of-order core generator (BOOM). For SoC designers interested in utilizing heterogeneous specialization for added efficiency gains, Rocket Chip supports the integration of custom accelerators in the form of instruction set extensions, coprocessors, or fully independent novel cores. Rocket Chip has been taped out (manufactured) eleven times, and yielded functional silicon prototypes capable of booting Linux.}
 }
-@article{zhaosonicboom,
-  title={SonicBOOM: The 3rd Generation Berkeley Out-of-Order Machine},
-  author={Zhao, Jerry and Korpan, Ben and Gonzalez, Abraham and Asanovic, Krste},
-  booktitle={Fourth Workshop on Computer Architecture Research with RISC-V},
-  year={2020},
-  journal = {},
-  month={May}
+@techreport{boom-core,
+    Author = {Celio, Christopher and Patterson, David A. and Asanović, Krste},
+    Title = {The Berkeley Out-of-Order Machine (BOOM): An Industry-Competitive, Synthesizable, Parameterized RISC-V Processor},
+    Institution = {EECS Department, University of California, Berkeley},
+    Year = {2015},
+    Month = {Jun},
+    URL = {http://www2.eecs.berkeley.edu/Pubs/TechRpts/2015/EECS-2015-167.html},
+    Number = {UCB/EECS-2015-167},
+    Abstract = {BOOM is a synthesizable, parameterized, superscalar out-of-order RISC-V core designed to serve as the prototypical baseline processor for future micro-architectural studies of out-of-order processors. Our goal is to provide a readable, open-source implementation for use in education, research, and industry.
+
+BOOM is written in roughly 9,000 lines of the hardware construction language Chisel. We leveraged Berkeley’s open-source Rocket-chip SoC generator, allowing us to quickly bring up an entire multi-core processor system (including caches and uncore) by replacing the in-order Rocket core with an out-of-order BOOM core. BOOM supports atomics, IEEE 754-2008 floating-point, and page-based virtual memory. We have demonstrated BOOM running Linux, SPEC CINT2006, and CoreMark.}
 }
 @misc{biglittle,
   author       = {ARM Ltd.},
@@ -80,4 +84,71 @@
    doi={10.1109/TVLSI.2019.2926114},
    ISSN={1557-9999},
    month={Nov},
+}
+@misc{applem2,
+  author       = {Apple},
+  howpublished = {\url{https://www.apple.com/uk/newsroom/2022/06/apple-unveils-m2-with-breakthrough-performance-and-capabilities/}},
+  title        = {Apple unveils M2},
+  year         = {2022}
+}
+@misc{riscv-1,
+  author       = {Editors Andrew Waterman and Krste Asanovic, RISC-V Foundation, December 2019},
+  title        = {The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Document Version 20191213},
+  howpublished = {\url{https://github.com/riscv/riscv-isa-manual/releases/download/Ratified-IMAFDQC/riscv-spec-20191213.pdf}}
+}
+@misc{riscv-2,
+  author       = {Editors Andrew Waterman, Krste Asanovic, and John Hauser, RISC-V International, December 2021},
+  title        = {The RISC-V Instruction Set Manual, Volume II: Privileged Architecture, Document Version 20211203},
+  howpublished = {\url{https://github.com/riscv/riscv-isa-manual/releases/download/Priv-v1.12/riscv-privileged-20211203.pdf}}
+}
+@misc{tilelink,
+  author       = {SiFive},
+  title        = {SiFive TileLink Specification},
+  howpublished = {\url{https://sifive.cdn.prismic.io/sifive/7bef6f5c-ed3a-4712-866a-1a2e0c6b7b13_tilelink_spec_1.8.1.pdf}}
+}
+@msic{nexys-a7-100t,
+  author       = {Digilent},
+  title        = {Nexys A7 Reference Manual},
+  howpublished = {\url{https://digilent.com/reference/programmable-logic/nexys-a7/reference-manual}}
+}
+@book{case-method-fasttrack,
+  author         = {Dai Clegg, Richard Barker},
+  publisher      = {Addison-Wesley},
+  title          = {Case Method Fast-Track: A RAD Approach},
+  year           = {1994},
+  isbn           = {978-0-201-62432-8}
+}
+@misc{vivado-risc-v,
+  author       = {Eugene Tarassov},
+  howpublished = {\url{https://github.com/eugene-tarassov/vivado-risc-v}},
+  title        = {Xilinx Vivado block designs for FPGA RISC-V SoC running Debian Linux distro},
+  year         = {2020}
+}
+@misc{irc,
+  author       = {J. Oikarienen, D. Reed},
+  howpublished = {\url{https://datatracker.ietf.org/doc/html/rfc1459#section-4.1}},
+  title        = {Internet Relay Chat Protocol},
+  year         = {1993}
+}
+@misc{minicom,
+  author       = {Miquel van Smoorenburg},
+  howpublished = {\url{https://salsa.debian.org/minicom-team/minicom}},
+  title        = {Minicom},
+  year         = {<1999}
+}
+@misc{linux-memory,
+  author       = {The kernel development community},
+  howpublished = {\url{https://www.kernel.org/doc/html/latest/admin-guide/mm/concepts.html}},
+  title        = {Concepts overview - Memory Management}
+}
+@misc{rust-riscv,
+  author       = {Aleš Katona, Vadim Kaushan, Daniel Hayes},
+  title        = {riscv - Rust},
+  howpublished = {\url{https://docs.rs/riscv/0.10.0/riscv/}}
+}
+@article{gantt-chart,
+  author          = {Henry L. Gantt},
+  journal         = {Engineering Magazine},
+  title           = {Work, Wages and Profit},
+  year            = {1910}
 }
