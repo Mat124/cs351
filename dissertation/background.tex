@@ -1,4 +1,46 @@
-\chapter{Background}
+\chapter{Background and Research}
 \label{ch:background}
 
-Your literature review goes here. \citet{hughes1989functional} discusses the advantages of functional programming by exploring \emph{e.g.}\ lists, trees, and noughts and crosses in a functional programming language. 
+\section{RISC-V}
+\label{sec:riscv-background}
+\subsection{ISAs and RISC vs CISC}
+An ISA is an instruction set architecture, and is the formal definition for what an abstract model of a CPU. The ISA defines the instructions, registers, communication standards and other features of a CPU in order to allow a person with the ISA to design a physical CPU that would implement the abstract model. CPUs that implement the same ISA (or supersets of an ISA) are able to execute the same code, meaning programs written for a CPU can be run on a different CPU if they share the same ISA. This is how a single compiled program is able to be run on so many different systems, and is incredibly important for modern devices, where there is a huge range of processors available. 
+
+Many modern ISAs are based on older ISAs that have been extended to allow for new instructions, registers, communication protocols, etc, while maintaining support for previous ISAs. This is typically called CISC (Complex Instruction Set Computers), where there are a very large amount of instructions the processor can execute. The backwards compatibility can be very useful, and having explicit instructions for many tasks can mean the tasks are completed more efficiently than if multiple smaller instructions were executed. Having large instructions can also reduce program sizes, due to the increased operations per instruction, which is very beneficial, especially in small systems.
+
+There are several issues with CISC however, such as increased complexity in the CPU as the amount of instructions increases, leading to rising costs of design and manufacture, and can force the physical size of the CPU to be larger to accommodate the extra logic space for larger instructions. More complex designs will also make future development harder if backwards compatibility is to be maintained. 
+
+The alternative to CISC is RISC (Reduced Instruction Set Computer). RISC aims to reduce the number of instructions the CPU requires in order to keep the design as simple as possible. This allows the design to be done much more easily, as well as allowing future extensions to be easier. Reduced complexity can also allow for greater optimisations in what instructions are in the ISA, with the aim of achieving greater performance than CISC by executing more instructions at much greater speed. There are drawbacks however, with increased program size and possible reduction in speed of execution for multiple operations that could've been completed in a single instruction using CISC.
+
+\subsection{The RISC-V ISA}
+RISC-V is a new, modern, open-standard ISA that follows RISC concepts. The ISA does not specify a single instruction set, but multiple by having three different width instruction sets with different base instructions. 32-bit RISC-V (RV32I) is focussed on embedded and personal systems, 64-bit RISC-V (RV64I) for personal and server systems and 128-bit RISC-V (RV128I) for server and high-performance compute systems. RV32 and RV64 have embedded versions, RV32E and RV64E, that have reduced registers and instructions.
+
+\subsubsection{Extensions}
+At base, these implement only integer addition/subtraction. The ISA contains extensions that add more functionality to the CPUs, such as support for multiplication/division, floating point operations IEEE-754, compressed instructions, atomics, etc. An instruction set implementing these extensions is referred to by adding the initial of the extension to the name, so a 64-bit CPU with integer addition/subtraction, multiplication/division and compressed instructions would be `RV64IMC`. Custom extensions can also be written, allowing for a great deal of customisation in RISC-V CPU designs.
+
+There are 30 official extensions to the base instruction sets. The most popular are listed below.
+\begin{description}
+    \item[M] Integer multiplication and division
+    \item[A] Atomic instructions
+    \item[F] Single-precision floating point
+    \item[D] Double-precision floating point
+    \item[Zicsr] Control and Status Register (CSR), useful in multi-CPU systems
+    \item[Zifencei] Instruction-Fetch Fence
+    \item[G] Short for IMAFDZicsrZifencei as a 'general-purpose' CPU, e.g. RV64G
+    \item[C] Compressed instructions, 16-bit instead of 32/64
+    \item[Others] Quad-precision floating point, bit manipulation, vector, misaligned atomics, etc
+\end{description}
+
+\section{Processor Design}
+Processor performance can be measured in multiple ways, with the main metrics being speed at executing tasks, cost of manufacturing, physical size and energy consumption. These are implicitly linked - a processor with larger physical size will likely draw a larger amount of energy, contain more logic and so be faster at executing tasks and cost more to manufacture. The aim of processor design is to maximise the speed of task execution, while minimising the rest. The balance between these is what gives rise to different processor designs, as a mobile device is much more constrained in power usage than a large server and will require a different processor.
+
+Maximising task execution while minimising energy consumption can be balanced in a multitude of ways. 
+
+\section{Related work}
+%TODO: To be updated - mostly copied from specification, want this to be much more critical/analytical
+%Discuss related work.
+\subsection{A RISC-V Heterogeneous SoC for Embedded Devices\cite{valenterisc}}
+This project is ongoing, and presents work designing a RV64 (RISC-V 64-bit) host core that offloads tasks to a PMCA (Programmable Many Core Accelerator) made from RV32 (RISC-V 32-bit) cores, which implement extensions for machine learning and discrete signal processing. The suggested use-case for the SoC is in IoT applications and programmable embedded devices. The host core is Linux compatible, and offers a full OS that acts as a platform for programs that run on the PMCA. The use of a large RV64 core to allow a full Linux OS to run on the SoC provides a huge amount of flexibility to the programmer, as the OS implements features like CLI, memory virtualisation, networking and more that allow programs to be written much more generally than embedded software running without an OS. However, this usage of a full Linux OS could be considered excessive for the use-case. An embedded Linux OS would have a lower overhead due to the reduced services it offers, which is very beneficial in an embedded environment where efficiency is highly important. Unfortunately, no data is provided about the processing power or energy usage of the design.
+
+\subsection{Muntjac multicore RV64 processor\cite{UCAM-CL-TR-972}}
+Muntjac is an SoC generator comprising of multiple components, that can be used to produce a Linux capable SoC. There is only one type of core in the system, RV64, but the SoC can be multicore. The project report is dedicated to the design of the core and cache as opposed to usage in any devices, as the purpose is to provide an easily understood and extensible platform for specialised designs. This is excellently done - the project is very well presented and uses multiple open-standards like TileLink\cite{tilelink} to increase the ease of working with it. It would be possible for this project to be extended for a heterogeneous SoC design, but it appears that this has not yet been done in any public works that extend the project.
