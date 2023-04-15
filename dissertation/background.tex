@@ -24,9 +24,9 @@ There are 30 official extensions to the base instruction sets. The most popular 
     \item[A] Atomic instructions
     \item[F] Single-precision floating point
     \item[D] Double-precision floating point
-    \item[Zicsr] Control and Status Register (CSR), useful in multi-CPU systems
+    \item[Zicsr] Control and Status Register (CSR)
     \item[Zifencei] Instruction-Fetch Fence
-    \item[G] Short for IMAFDZicsrZifencei as a 'general-purpose' CPU, e.g. RV64G
+    \item[G] Short for \texttt{IMAFDZicsrZifencei} as a 'general-purpose' CPU, e.g. RV64G
     \item[C] Compressed instructions, 16-bit instead of 32/64
     \item[Others] Quad-precision floating point, bit manipulation, vector, misaligned atomics, etc
 \end{description}
@@ -34,7 +34,40 @@ There are 30 official extensions to the base instruction sets. The most popular 
 \section{Processor Design}
 Processor performance can be measured in multiple ways, with the main metrics being speed at executing tasks, cost of manufacturing, physical size and energy consumption. These are implicitly linked - a processor with larger physical size will likely draw a larger amount of energy, contain more logic and so be faster at executing tasks and cost more to manufacture. The aim of processor design is to maximise the speed of task execution, while minimising the rest. The balance between these is what gives rise to different processor designs, as a mobile device is much more constrained in power usage than a large server and will require a different processor.
 
-Maximising task execution while minimising energy consumption can be balanced in a multitude of ways. 
+\subsection{Power reduction in processors}
+Maximising task execution while minimising energy consumption can be balanced in a multitude of ways. Power consumption in CPUs can be split into two sections: switching power and leakage power. Switching power is the power used by CMOS (transistor) gates as they change states, and varies on CPU activity. Leakage power is the power lost through slow leakage current flow through transistors in the 'off' state, and has increased as transistor sizes decrease and the boundary that must be crossed reduces.
+
+\subsubsection*{Dynamic Voltage Frequency Scaling (DVFS)}
+CPUs contain clocks, which synchronises the components inside the CPU as they change state and execute instructions. Increasing the clock speed will result in an increase to the number of instructions executed per second, directly increasing the performance of the CPU. However, this directly increases the amount of switching power the CPU draws, given by equation \ref*{eq:pswitching}.
+
+\begin{equation} \label{eq:pswitching}
+    P_{switching} = \alpha \cdot C \cdot V^2 \cdot f
+    \alpha = activity factor, proportion of transistors that switch every cycle
+    C = capacitance switched per cycle
+    V = transistor supply voltage
+    f = clock frequency
+\end{equation}
+
+In addition to this, increased clock speeds often require increased voltage in order to increase the current flow through transistors to activate them in the reduced time frame from shorter clock periods. Therefore, reducing the clock speed and the voltage will result in a quadratic reduction in switching power for a linear reduction in performance and if low performance is needed, the power usage can be significantly reduced. CPUs implementing dynamic voltage frequency scaling are able to adjust their voltage and frequency during runtime dependant on the current tasks being run. This allows them to dramatically reduce power consumption during periods of low CPU utilisation, while still being able to provide good performance with high CPU utilisation.
+
+However, this makes some requirements of the CPU. There must be software that allows the CPU to estimate it's current utilisation, and this has to be run frequently in order to have a fast response and increase clock speed when a demanding task is run. This can take up valuable CPU time, and requires some form of scheduling to repeatedly switch to and from this task. The CPU must also implement hardware that allows it to change the clock speed and voltage, increasing the physical size of the CPU and increasing manufacturing costs.
+
+\subsubsection{Clock Gating}
+Clock gating is another technique for reducing power consumption in a CPU. When a section of the CPU is unused for a number of cycles, the clock signal to that section is removed. This disconnect reduces the switching power, as no transistor switching will occur in that section of the CPU without the clock, as well as reducing the capacitance seen by the clock generator.
+
+\subsection{Heterogeneous Designs}
+Another solution for power reduction in processors is heterogeneous designs. Multicore processors contain multiple CPUs in order to increase the potential performance in parallel computing tasks. A heterogeneous design contains multiple, different CPU designs instead of all CPUs being copies of each other as in homogeneous designs.
+
+By having multiple different types of CPU, the processor can increase efficiency and reduce power consumption by intelligently selecting which CPU to run a task on. For example, a processor containing a small (S) core and a big (B) core could be running in a mobile phone. For the vast majority of the time, the mobile phone is not in use and only runs tasks such as checking for texts, emails, etc. These tasks can be run on the S core, with the B core fully disabled/clock gated, reducing the power consumption to that of the S core + B core leakage current. This power consumption should be less than that of the B core performing the tasks, in order for the processor to actually provide efficiency increases over a B core homogeneous design.
+
+When the mobile device is actively in use, like video playback or mobile games, the B core would be used to provide greater performance than the S core, or both used for parallel tasks. This allows a heterogeneous S+B design to provide better energy efficiency and better performance than a homogeneous design with one B core.
+
+There are some drawbacks to heterogeneous designs. In order to properly utilise the differences between the cores, a scheduler must be customised for the exact processor as other designs with different CPUs will need to switch which task is run where at different stages. A heterogeneous system with a medium core and a big core will be able to use the smaller core for more intensive tasks than a heterogeneous system with a small core and a big core, thus requiring a scheduler with different parameters.
+
+The physical size and complexity of the processor will also be increased compared to a single core design. This increases the cost of design and manufacturing, another drawback compared to homogeneous designs.
+
+\subsubsection{Accelerator-style Heterogeneous Designs}
+Some heterogeneous designs do not attempt to pair types of general purpose CPUs, but instead have a host CPU type and accelerator CPU type. The host CPU explicitly schedules tasks for the accelerator CPU, which is typically optimised explicitly for a certain task to increase the performance and efficiency in completing it.
 
 \section{Related work}
 %TODO: To be updated - mostly copied from specification, want this to be much more critical/analytical
