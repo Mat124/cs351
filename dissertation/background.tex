@@ -74,7 +74,32 @@ Some heterogeneous designs do not attempt to pair types of general purpose CPUs,
 It follows that accelerator heterogeneous designs are a better choice when it is known exactly what work the SoC will be doing, such as embedded systems. For more general purpose systems where the use-case or end-user of the system will determine the type of work done, accelerator designs are a lot less suitable due to the increased performance that having another general purpose CPU would give in cases where the accelerator is not applicable.
 
 \section{FPGAs}
-FPGAs (Field Programmable Gate Arrays) are integrated circuits.
+FPGAs (Field Programmable Gate Arrays) are flexible logic chips that can implement hardware designs that would usually be manufactured as ASICs (Application-Specific Integrated Circuits). FPGAs are often used due to their reprogrammability and low start-up cost: while ASICs can be cheaper to mass produce, FPGAs are cheaper when a very limited amount are being produced, for example in prototyping. FPGAs can also be reprogrammed, and reused for multiple projects. However, an FPGA is far slower than an ASIC performing the same task as it is not 'hardwired', and become much more expensive than ASICs when mass-production of the chip is required.
+
+\subsection{Flexible logic blocks}
+Flexible logic blocks are what allow FPGAs to implement arbitrary logic functions. These consist of look-up tables, multiplexers, flip-flops and some small arithmetic logic, such as a 4-bit adder.
+
+\begin{description}
+    \item[LUT] An n-input LUT is a 2\textsuperscript{n} bit memory which can be used to store the truth table for an n-input logic function, thereby functioning as a combinational logic gate(s).
+    \item[Multiplexer] Multiplexers can be used to switch the output between the LUTs, flip-flops and arithmetic logic.
+    \item[Flip-flops] Used together with the LUTs to implement clocked logic functions.
+    \item[Arithmetic logic] Dependant on the FPGA, typically shared between a few logic blocks.
+\end{description}
+
+LUTs in modern FPGAs are typically around 6-inputs and so can store 64 combinations. For logic functions with more inputs than a single LUT, multiple LUTs can be combined and implement complex functions.
+
+\subsection{Flexible routing}
+FPGAs need to be able to connect different resources inside the chip to create the correct datapaths. This is achieved using large grids of wires between groups of logic blocks (sometimes called slices). The grids connect at switch boxes, which connects tracks to create data pathways between components. Latency in the signals sent are increased as the length of wire and amount of switch boxes increases, so minimising this is an important part of the process when a design is being mapped to an FPGA.
+
+\subsection{Flexible IO}
+FPGAs often have IO pins connected to logic that allows them to be programmed, implementing different IO protocols as required.
+
+\subsection{Hard modules}
+While the flexible logic can be used to implement any logic function, the FPGA implementation will be slower than a dedicated hardware module. To increase performance in FPGAs, hard modules are embedded in the flexible logic to increase the performance when doing common tasks, like integer arithmetic or signal processing. 
+
+Memory is often added to increase performance when large amounts of data must be stored and processed by the FPGA, as well as reduce the amount of LUTs used as data storage instead of logic functions. Block RAMs are embedded inside the flexible logic to reduce the physical distance between them, decreasing latency and increasing potential clock speed. As well as BRAMs, FIFOs and IO buffers are commonly used.
+
+DSP (Digital Signal Processing) blocks are also embedded within the flexible logic blocks. These contain hardwired ALUs, and increase FPGA performance of arithmetic based tasks.
 
 \section{Related work}
 %TODO: To be updated - mostly copied from specification, want this to be much more critical/analytical
