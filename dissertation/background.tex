@@ -101,6 +101,9 @@ Memory is often added to increase performance when large amounts of data must be
 
 DSP (Digital Signal Processing) blocks are also embedded within the flexible logic blocks. These contain hardwired ALUs, and increase FPGA performance of arithmetic based tasks.
 
+\subsection{FPGA programming and HDLs}
+FPGAs implement logic defined by a HDL (Hardware Description Language). HDLs are similar to conventional coding languages in how they are written, but describe the structure and behaviour of a digital circuit at RTL (Register Transfer Level). There are also differences in the "compilation" of a HDL. Instead of being reduced to bytecode specific to an ISA, the HDL goes through the process of synthesis, where the formal definition is simplified into a design in terms of logic gates. The generated design is a netlist, effectively a list of the logic gates and the connections between them. The next stage in the process is place and route, which is specific to the FPGA being used. The netlist is mapped to resources inside the FPGA, such as LUTs and DSPs, with wires then routed between the resources to make the desired data paths. This stage requires optimisation, as the placement of the resources affects the distance of wire and latency, so changing the placement can result in better (or worse) maximum clock speeds and signal integrity. The result of place and route is a final design that can be implemented on an FPGA by generating a bitstream, a file that is loaded by the FPGA and configures the resources and switchboxes to implement the design.
+
 \section{Related work}
 %TODO: To be updated - mostly copied from specification, want this to be much more critical/analytical
 %Discuss related work.
