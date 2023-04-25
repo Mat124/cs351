@@ -45,7 +45,7 @@ As the SoC designed by this project will never be put into a production environm
 This mode is used for systems where multiple OSs may be running concurrently, such as servers or workstation PCs. This project does not aim to design an SoC to be used in this context and we can safely disable this option.
 
 \subsection{Debug mode}
-
+Debug mode has been preliminarily proposed as an extension to the RISC-V ISA. The \texttt{useDebug} option controls the implementation of this extension. As the proposal is still preliminary, there is no exact specification and the implementation may not follow what is documented in the proposal.
 
 \subsection{Default RocketCore CPUs}
 RocketCore contains some predefined core designs. These allow a user to immediately generate a RocketCore CPU without having to parameterise their own, with a few different options dependant on the use case.
@@ -63,9 +63,11 @@ The core has separate data and instructions caches, each with 64 sets of 1 ways,
 
 A small BTB (Branch Target Buffer) with 28 entries and a BHT (Branch History Table). The BTB stores the destination of recent branches, with the BHT the history of whether the branch was taken. This forms a branch predictor, that attempts to predict if a branch is taken and if so, where it will jump to. This is a relatively small branch predictor, and would suffer in complex programs with many varying branches.
 
-The multiplier divider unit is small, without unrolling or early out.
+The multiplier divider unit is small, without unrolling or early out. 
 
 \chapter{Test Design}
 \label{ch:test_design}
 
-In this chapter, we describe the implementation of the design we described in \Cref{ch:design}. You should \textbf{not} describe every line of code in your implementation. Instead, you should focus on the interesting aspects of the implementation: that is, the most challenging parts that would not be obvious to an average Computer Scientist. Include diagrams, short code snippets, etc. for illustration.
+\section{Software Verification}
+Software verification was completed using the Spike RISC-V emulator. Spike is a functional model of a RISC-V processor, with options for number of harts (hardware threads, RISC-V representation of logical cores), and ISA. Spike supports all major ratified extensions, as well as some still in the proposed stage. As our final hardware implementation uses RV64IMAZicsrZifenceiC, we can set Spike to simulate the same core type when invoking from the command line.
+
