@@ -45,7 +45,21 @@ As the SoC designed by this project will never be put into a production environm
 This mode is used for systems where multiple OSs may be running concurrently, such as servers or workstation PCs. This project does not aim to design an SoC to be used in this context and we can safely disable this option.
 
 \subsection{Debug mode}
-Debug mode has been preliminarily proposed as an extension to the RISC-V ISA. The \texttt{useDebug} option controls the implementation of this extension. As the proposal is still preliminary, there is no exact specification and the implementation may not follow what is documented in the proposal.
+Debug mode has been preliminarily proposed as an extension to the RISC-V ISA. The \texttt{useDebug} option controls the implementation of this extension. When enabled, this generates hardware in the core to enable debugger control of the core, as well as a debugger module in the SoC. The changes to the core include addition of CSR registers, writable only by an external debugger interacting with the debug module, that can halt execution, force jumps, and other control functions. The debug module allows an external debugger to get the contents of core data registers, cache, RAM, and CSRs as needed, enabling someone testing hardware to inspect the status of the core during program execution. The debug module also provides the capability to 'step through' the instructions, a very useful feature when identifying the exact instruction where a program deviates from expected execution.
+
+We have enabled this option during the design phase, as the debug features it provides is very useful when designing the test software. For the actual core under test the option was disabled, to reduce the FPGA usage for comparisons and maximise the available resources for additional processing hardware.
+
+\subsection{Atomics}
+The \texttt{useAtomics} and \texttt{useAtomicsOnlyForIO} options enable parts of the Atomic RISC-V extension. The atomic extension implements instructions allowing for read-modify-write to memory and IO while keeping memory consistency between multiple RISC-V harts utilising the same memory/IO.
+
+Base RISC-V ISA has a relaxed memory model, allowing loads and stores to take place in any order if unspecified. The atomic extension implements load-reserved and store-conditional instructions that can apply additional ordering constraints on memory/IO operations, and ensure data is valid during operations performed on it. There are two bits used to specify acquire and release ordering requirements for this RISC-V hart: when the acquire bit is set, no memory operation instructions following the acquire-set instruction can take place before the acquire-set operation; when the release bit is set, the release-set instruction must take place after any previously issued memory operations. The combination of these bits allow for sequential ordering of memory operations for a RISC-V hart can be asserted. These instructions are primarily utilised for out-of-order CPUs, where the ordering of issued instructions does not necessarily match the order of instruction execution, leading to race conditions without atomically defined instructions.
+
+The atomics also implement instructions for multicore synchronisation. Atomic write-modify instructions for memory perform changes that occur uninterrupted with a single instruction. These also implement the acquire and release bits, and allow for swapping, addition, bitwise operations and maximum/minimum instructions to be completed on data held in shared memory without other harts interefering.
+
+As the system we are designing is multicore, we enabled the \texttt{useAtomics} option. Not allowing simultaneous memory access in a multicore system would cause a severe bottleneck in most cases and is the only other solution to ensure memory validity in this case.
+
+\subsection{Compressed instructions}
+Enabling the compressed instruction set extension is done using the \texttt{useCompressed} option.
 
 \subsection{Default RocketCore CPUs}
 RocketCore contains some predefined core designs. These allow a user to immediately generate a RocketCore CPU without having to parameterise their own, with a few different options dependant on the use case.
