@@ -10,8 +10,8 @@ We decided to design and implement two unique RocketCore CPUs for the heterogene
     \includegraphics[]{./img/rocket_tile_params.png}
 \end{figure}
 
-The micro-architecture specification of RocketCore is not publicised. This means implementation details of the core are not documented, and makes understanding how the core functions a difficult task. For example, to identify what changes occur when \texttt{useVM} is enabled instead of disabled, we must search through the source code (10000+ lines of Chisel in ) to find where the value is used and what it is used for - what other variables are impacted, how they change, etc. 
-
+The micro-architecture specification of RocketCore is not publicised. This means implementation details of the core are not documented, and makes understanding how the core functions a difficult task. For example, to identify what changes occur when \texttt{useVM} is enabled instead of disabled, we must search through the source code (10000+ lines of Chisel\cite{}) to find where the value is used and what it is used for - what other variables are impacted, how they change, etc. The following sections identify and discuss what customisation is available, with parameters common between all cores specified and parameters that will be varied during testing identified.
+%todo cite above
 \subsection{Constant elements in RocketCore}
 \subsubsection{Core Frequency - \texttt{bootFreqHz}}
 The \texttt{bootFreqHz} core variable does not impact the actual frequency of the core, but instead is added to the device tree structure, so that an operating system is able to read the boot frequency of the CPU. The actual frequency of the cores are defined by clocks generated in the Vivado project. These can be edited, with supported frequencies of 160, 125, 100, 80, 62.5, 50, 40, 31.25, 25, and 20 MHz. The clock manager uses phase locked loop and counters to divide the central clock from the FPGA crystal oscillator. This reduces the available frequencies to those that can be formed from that central clock using the dividers. The Nexys-A7-100t has a crystal capable of generating up to 50 MHz, and is shared between all cores in the RocketChip SoC. This prevents individual clock frequencies for cores, one of the significant changes between big and small cores in typical heterogeneous systems. This will severely limit the actual performance difference between cores, as well as the power consumption difference. This also prevents frequency scaling as the RocketChip SoC does not have control of the clock generator, another key part of modern power saving measures. These are limitations of FPGAs as a platform and the SoC generators used in this project.
@@ -59,13 +59,154 @@ The atomics also implement instructions for multicore synchronisation. Atomic wr
 As the system we are designing is multicore, we enabled the \texttt{useAtomics} option. Not allowing simultaneous memory access in a multicore system would cause a severe bottleneck in most cases and is the only other solution to ensure memory validity in this case.
 
 \subsection{Compressed instructions}
-Enabling the compressed instruction set extension is done using the \texttt{useCompressed} option.
+Enabling the compressed instruction set extension is enabled using the \texttt{useCompressed} option. The extension adds support for 16-bit versions of common RISC-V instructions and are utilised whenever possible to reduce the code-size when compiled. In order to use 16-bit instructions instead of 32-bit, the data embedded in the instruction must be able to be stored in a reduced amount of bits than provided in 32-bit: for instance, when performing integer additions where a source and destination register are specified, if the registers are the same then the instruction can likely be compressed. The compressed extension affects the base ISA (RV64I) as well as the single-precision and double-precision extensions, though this must be supported in the implementation of these instead of the compressed extension.
+
+With compressed enabled, the code-size can typically be reduced by 25-30\%, with 50-60\% of 32-bit instructions being replaced with 16-bit counterparts. This is a huge reduction, and is especially useful in embedded systems where storage space can be extremely limited. We enabled this option to add compressed instruction compatibility to the design, and allowing the code-size reductions that it provides.
+
+\subsection{Bit manipulation and Vector}
+\texttt{useBitManip} and \texttt{useVector} options exist in the \texttt{CoreParams} class used for defining core designs. However, RocketCore is not advertised as implementing these extensions and so their function was unknown. Examining the RocketChip code that utilises these options reveals a partial implementation of the vector extension, where CSR registers are added for control, as well as logic to update dirty bits and other status bits. This is the only vector code implemented however - there are no registers or other logic defined for the vector extension. Instructions have been defined in Chisel for the vector operations, but there is no decode logic defined for the instructions and so they cannot be used. The \texttt{useBitManip} option only adds the bit manipulation extension letter to the ISA string held in the CSR, making no other changes. As such, these options have been left disabled in the design as they serve no functional purpose.
+
+\subsection{SCIE}
+Custom instructions support is enabled within RocketCore by enabling the \texttt{useSCIE} option (Si-Fice Custom Instruction Extension). This enables support for custom instructions, producing a custom instruction logic interface. Connected custom instruction logic is supplied with the current instruction, data from two registers and can output register data and a dispatch code. As we are not writing any custom instructions for this project, the extension is unnecessary and we have not enabled it in the designs.
+
+\subsection{RVE}
+\texttt{useRVE} changes the base ISA to RV32E instead of RV32I when enabled. RV32E supports the same instructions and extensions as RV32I, but removes the top 16 general purpose registers, limiting the core to \texttt{x0} to \texttt{x15}. This can reduce the area used by a RV32 core by up to 25\% when no other extensions are enabled. As our design targets the RV64 architecture, this option is incompatible and disabled.
+
+\subsection{Integer Multiplier}
+The integer multiplier unit in RocketCore is customised using a set of parameters set in \texttt{MulDivParams} and passed to the \texttt{MulDiv} class for hardware creation. The parameters for this vary between the design scenarios, as seen in \label[]{}%todo add label
+
+\subsubsection{Unrolling}
+The multiplier unit allows for the unrolling of both multiplier and division instructions. Unrolling controls how much of the multiplication operation is completed in a single clock cycle. Without unrolling, multiplier latency is 64 cycles in RV64 architecture, with a single bit computed per cycle. Increasing the unrolling factor decreases the latency in a ratio of \texttt{64/unroll} for the multiplier and \texttt{1 + 64/unroll} for divider. The inverse relation between unroll factor and latency means increasing the factor can provides dramatic decreases for small factors, but diminishing returns are achieved as the unroll factor increases. An issue with increasing the unroll factor is the constraints placed on the clock speed. The increased amount of computation performed each cycle increases the minimum required time period to finish and may violate the setup time if the clock speed is not adjusted accordingly.
+
+Unrolling multiplication and division operations result in unequal changes to timing constraints - each individual division operation takes longer than a multiplication operation. To maintain high clockspeed, division operations cannot be unrolled as much as multiplication operations.
+
+\subsubsection{Early out}
+The multiplier unit also has an option for early output of results when possible. A mask is applied to the input and the early output bit is set when the result can be read. Early output can result in a large latency decrease depending on the situation, as small integer multiplications will result in smaller outputs that will likely not require all integer bits and can make use of the early out. The minimum latencies for multiplication and division is reduced to 2 cycles and 3 cycles in a best case scenario.
+
+Granularity for the early out can also be set for the division operations.
+
+\subsection{Floating Point Unit}
+The floating point unit (FPU) can also be customised in a limited way, using the \texttt{FPUParams} class passed to the FPU generator. Setting this class to \texttt{None} instead of instantiating it results in no FPU initialised, and the ISA lacks F or D extension support. FPUs are much more complicated than integer operation units, with the RocketCore implementation including subunits for integer to FP conversion and vice-versa, pipelines and register file. Use of the FPU is discussed more in \label[]{}.%todo add label
+
+\subsubsection{Floating point lengths}
+The minimum float length (\texttt{minFLen} in the \texttt{FPUParams class}) can be changed to support half-precision floating points of 16 bits, and the maximum float length \texttt{fLen} changed to support double-precision floating points. The FPU in RocketCore does not support quad-precision floating points of 128-bits, though this is not widely used in CPUs.
+
+\subsubsection{FMA Latency}
+The RocketCore FPU supports fuse multiply-add operations, where multiplication and addition are performed with a single operation. These are pipelined instructions for RocketCore, and the latency can be specified at instantiation. The cycle latency choice is bounded, allowing 1 to 3 cycles. Similar to the multiplier unrolling, decreased latency can come at the cost of increased clock period, decreasing clock frequency, but may overall be an improvement in FPU performance.
+
+\subsubsection{Squareroot}
+The \texttt{divSqrt} option enables a dedicated square root function in the FPU, allowing the square root of numbers to be found faster than regular division. This is a useful function due to the increased use of square roots in modern CAD tools and 3D graphics processing, where slow square root can bottleneck a processor\cite{squareroot-fpu}.
+
+\subsection{Local Interrupts}
+Additional local interrupts can be added to the RocketCore using \texttt{nLocalInterrupts} option. These additional interrupts are added to the CSRs and are accessible from all implemented modes. No additional local interrupts are necessary for this design, as there are already multiple available within the standard CSRs.
+
+\subsection{Non-maskable interrupt}
+The use of non-maskable interrupts can be disabled in RocketCore, meaning it would technically not meet RISC-V specification when disabled. However, enabling/disabling this option has no functional difference for software as NMI is used exclusively for hardware error conditions and cause an immediate jump to the NMI vector in M-mode to address the issue. NMIs have been disabled in our implementation as we do not foresee a use for them in the project.
+
+\subsection{Hardware Breakpoints}
+Hardware breakpoints can be added to the core for use with debuggers with the \texttt{nBreakpoints} option. This adds hardware resources to set breakpoints in running code, using triggers on address/data/memory operations. For testing purposes, we've included a single hardware breakpoint in each core, though actual usage of the hardware breakpoints is not anticipated due to the existence of software breakpoints in the RISC-V specification, as well as the debug module that can already be used to stop and step through sections of programs.
+
+\subsection{Physical Memory Protection}
+A custom amount of physical memory protection regions can be defined in RocketCore with \texttt{nPMPs}. PMP is used to limit or increase the physical address space available to software, to increase security and reduce faults. This primarily applies to U and S-mode software, where regions of memory are typically blocked off when using an OS or similar host software and security is required. PMPs can also optionally be configured to apply to M-mode accesses. U and S-mode are not implemented in this project and we will not require security for this design, but future programs utilising the designs might. We elected to include 8 PMP regions, as this was the amount in a default big core.
+
+\subsection{Performance Counters} %todo this
+
+\subsection{Cache flush}
+RocketCore implements a custom instruction for fully flushing the data cache, enabled with \texttt{haveCFlush}. The instruction has been disabled for our designs.
+
+\subsection{Writable ISA}
+RocketCore allows writing to the register holding ISA details, which is automatically configured and written to in the design. This has been disabled for our designs as the automatic ISA is accurate.
+
+\subsection{L2 TLB}
+An L2 TLB can be configured on-CPU in RocketCore. Due to the size constraints on our designs, we have not implemented this for our cores.
+
+\subsection{Page Table Entry Cache}
+We've configured our designs with an 8 entry PTE cache. Code being run on the design will be very small and likely not span more than a single page, but the design should be suitable for future programs that may take more space, and so would benefit from a larger PTE cache.
+
+\subsection{Machine Trap Vector}
+The machine trap vector is configurable in RocketCore. The startup value can be set, as well as preventing the trap vector from being modified. Our designs init with a trap vector of \texttt{0x0} and the trap vector is writable - the boot loader sets the trap vector on startup, so setting a default value is not required.
+
+\subsection{Fast loading}
+RocketCore allows data to be loaded directly to the core when fetching from memory when enabled via the \texttt{fastLoadWord} and \texttt{fastLoadByte} options. Typically, a cache miss occurs and data is fetched from memory into cache, and then loaded from cache to the core. Enabling these options add bypasses, allowing data to be loaded directly from memory into the core. Having both of these options enabled is allowed, but only one is ever used - \texttt{loadFastByte} takes priority during compilation to RTL. Our designs use \texttt{loadFastWord}, allowing a full word to bypass the cache instead of just the first byte.
+
+\subsection{Branch Prediction CSR}
+RocketCore has the option to add a custom branch prediction CSR. This contains two bits, used for requesting to completely flush the branch target buffer and to set the branch prediction CSR to static. We disabled this option in our design.,
+
+\subsection{Clock Gating} %todo this
+
+\subsection{Instruction Cache (L1)}
+The instruction cache on the core is customised using the \texttt{ICacheParams} class.
+
+\begin{description}
+    \item[\texttt{nSets}] Amount of sets in the cache
+    \item[\texttt{nWays}] Amount of ways in each set
+    \item[\texttt{rowBits}] Appears to have no function in \texttt{ICache}
+    \item[\texttt{nTLBSets}] Amount of sets in the cache TLB
+    \item[\texttt{nTLBWays}] Amount of ways in each TLB set
+    \item[\texttt{nTLBBasePageSectors}] How many sectors to divide each page into for easier memory loading
+    \item[\texttt{nTLBSuperpages}] Amount of superpages - much larger page than normal, providing larger TLB coverage
+    \item[\texttt{tagECC}] ECC for tags in cache
+    \item[\texttt{dataECC}] ECC for cache data
+    \item[\texttt{itimAddr}] Instruction Tightly Integrated Memory base address and enables ITIM if not \texttt{None}
+    \item[\texttt{prefetch}] Enables pre-fetching, getting next cache line in advance
+    \item[\texttt{blockBytes}] Size of each cache line
+    \item[\texttt{latency}] Latency of a fetch instruction, 1 or 2 cycles. Decreased latency limits clock frequency
+    \item[\texttt{fetchBytes}] Bytes fetched by CPU for each cycle
+\end{description}
+
+\subsection{Data Cache (L1)}
+The data cache on the core is customised using the \texttt{DCacheParams} class.
+
+\begin{description}
+    \item[\texttt{nSets}] Amount of sets in the cache
+    \item[\texttt{nWays}] Amount of ways in each set
+    \item[\texttt{rowBits}] Appears to have no function in \texttt{DCache}
+    \item[\texttt{subWordBits}] Amount of bits in each subword in the cache word
+    \item[\texttt{replacementPolicy}] Replacement policy - valid options are random, least recently used and pseudo least recently used
+    \item[\texttt{nTLBSets}] Amount of sets in the cache TLB
+    \item[\texttt{nTLBWays}] Amount of ways in each TLB set
+    \item[\texttt{nTLBBasePageSectors}] How many sectors to divide each page into for easier memory loading
+    \item[\texttt{nTLBSuperpages}] Amount of superpages - much larger page than normal, providing larger TLB coverage
+    \item[\texttt{tagECC}] ECC for tags in cache
+    \item[\texttt{dataECC}] ECC for cache data
+    \item[\texttt{dataECCBytes}] Bytes used for the tagECC
+    \item[\texttt{nMSHRs}] Number of miss status holding registers, tracking outstanding cache misses
+    \item[\texttt{nSDQ}] Store Data Queue buffers storing data from execute unit
+    \item[\texttt{nRPQ}] Queue config option for MSHRs
+    \item[\texttt{nMMIOs}] Memory mapped IO cache entries
+    \item[\texttt{blockBytes}] Bytes per data cache line
+    \item[\texttt{clockGate}] Enable clock gating in the data cache
+    \item[\texttt{scratch}] Enable scratchpad in data cache
+\end{description}
+
+\subsection{Branch Target Buffer and Branch History Table}
+A BTB and BHT can also be created by RocketCore. The BTB is a fully-associative cache, mapping instruction addresses to predicted PC contents. The RockerCore implementation has parameterisable amount of entries, match bits, pages, return address stacks and out-of-order updates.
+
+\begin{description}
+    \item[\texttt{nEntries}] BTB entries
+    \item[\texttt{nMatchBits}] Instruction address matching bits
+    \item[\texttt{nPages}] BTB pages
+    \item[\texttt{nRAS}] Number of return address stacks
+    \item[\texttt{updatesOutOfOrder}] Enable updating BTB out of order
+\end{description}
+
+The BTB contains the BHT, tracking the history of whether a branch is taken or not. The BHT has a parameterisable amount of entries, counter length (1 or 2 bits), history length and history bits.
+
+\begin{description}
+    \item[\texttt{nEntries}] Pattern entries in the BHT
+    \item[\texttt{Counter length}] Number of prediction bits
+    \item[\texttt{historyLength}] History length
+    \item[\texttt{historyBits}] Number of bits in each history entry
+\end{description}
 
 \subsection{Default RocketCore CPUs}
 RocketCore contains some predefined core designs. These allow a user to immediately generate a RocketCore CPU without having to parameterise their own, with a few different options dependant on the use case.
 
+\subsubsection{Big Core}
+The default big core with RocketCore
+
 \subsubsection{Small Core}
-The RocketCore predefined small core implements the RV64IMAZicsrZifenceiC ISA, removing the single-precision floating point and double-precision floating point instructions from the RV64GC ISA. The point of this is to remove the FPU from the CPU, much reducing the logic required by the design.
+The RocketCore predefined small core implements the RV64IMAZicsrZifenceiC ISA, removing the single-precision floating point and double-precision floating point instructions from the RV64GC ISA. Removing the FPU from the core much reduces the total logic taken by the core, reducing 
 
 \begin{figure}
     \includegraphics[]{./img/rocketcore_default_small.png}
@@ -78,6 +219,14 @@ The core has separate data and instructions caches, each with 64 sets of 1 ways,
 A small BTB (Branch Target Buffer) with 28 entries and a BHT (Branch History Table). The BTB stores the destination of recent branches, with the BHT the history of whether the branch was taken. This forms a branch predictor, that attempts to predict if a branch is taken and if so, where it will jump to. This is a relatively small branch predictor, and would suffer in complex programs with many varying branches.
 
 The multiplier divider unit is small, without unrolling or early out. 
+
+\subsection{Final Design Scenarios}
+The custom big core implements the RV64IMAZicsrZifenceiC ISA.
+
+\subsubsection{FPU} %todo show overutilisation
+Experimentation with FPUs was attempted, and cores successfully synthesised and implemented on the FPGA. However, attempting to synthesis a dual core design was unsuccessful - the amount of LUTs required for such a design was always greater than the amount available on the FPGA, no matter the reductions made in other options like cache. As such, the final design has not been able to include an FPU and we dropped support for the F and D ISA extensions.
+
+\subsection{Final Design Scenario - Custom Small Core}
 
 \chapter{Test Design}
 \label{ch:test_design}

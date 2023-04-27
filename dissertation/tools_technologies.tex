@@ -13,7 +13,7 @@ The aim of the project is to design a fully functioning RISC-V SoC that could po
 
 The RocketChip generator is a collection of smaller sub-generators that create parameterised components. These components fit together to create the full SoC via standard interfaces, allowing any design implementing the interfaces to be easily exchanged for another in the design. The most important to this project is the core, and RocketChip can generate three core types: RocketCore, BOOM and Z-scale Core. RocketCore and BOOM are both parameterisable, allowing a semi-custom design to be created. The default BOOM core (RV64GC) utilises around 148500 LUTs for a single core, and so cannot be used with the available FPGA. A default RocketCore (RV64GC) uses approximately 38300 LUTs for a single core, and 27500 for each default core after, giving 65800 LUTs necessary for a dual core design. This is greater than the number of LUTs in the FPGA, and so we will have to design cores smaller than these defaults. Exact details of the parameterisation options available in RocketCore are in the \ref{ch:design} chapter.
 
-CPUs instantiated in a RocketChip SoC are inside of 'tiles' following the TileLink architecture. This contains them inside standard interface sections, and allows them to be added to them same bus with cache coherency both within and without the tiles.
+CPUs instantiated in a RocketChip SoC are inside of 'tiles' following the TileLink architecture. This contains them inside standard interface sections, and allows them to be added to them same bus with cache coherency both within and without the tiles. %todo include rocketcore overview ehre - 6 stages, in order, etc
 
 \section{vivado-risc-v}
 \label{vivado-risc-v}
