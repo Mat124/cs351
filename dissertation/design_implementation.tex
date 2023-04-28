@@ -25,10 +25,10 @@ The integer ALU is not customisable within RocketCore. This results in all Rocke
 
 \subsubsection{}
 
-\subsection{MMU - \texttt{useVM}}
-The \texttt{useVM} option for core parameters controls whether an MMU (Memory Management Unit) is instantiated inside the core. MMU is enables the use of Virtual Memory, an abstraction of physical addresses to logical addresses. This increases the security and stability of a system, by preventing processes from accessing the memory space of other processes. Stopping reads to another processes' memory space ensures sensitive data currently held in memory by a process cannot be accessed by another process. Stopping writes to the memory space prevents the corruption of another processes' data, that could otherwise lead to user data loss, the process stopping unexpectedly or entire system crash depending on the importance of the memory corrupted process.
+\subsection{MMU}
+The \texttt{useVM} option for core parameters controls whether an MMU (Memory Management Unit) is instantiated inside the core and virtual memory is used. MMU is enables the use of Virtual Memory, an abstraction of physical addresses to logical addresses. This increases the security and stability of a system, by preventing processes from accessing the memory space of other processes. Stopping reads to another processes' memory space ensures sensitive data currently held in memory by a process cannot be accessed by another process. Stopping writes to the memory space prevents the corruption of another processes' data, that could otherwise lead to user data loss, the process stopping unexpectedly or entire system crash depending on the importance of the memory corrupted process. Virtual memory can also allow more logical memory than there is physical memory to be allocated to programs.
 
-The MMU in RocketCore is non-parameterisable - it is either instantiated inside the CPU or it isn't. %todo include LUT comparison with enabled/disabled
+The MMU in RocketCore is non-parameterisable - it is either instantiated inside the CPU or it isn't. We have chosen to enable virtual memory and have an MMU instantiated inside the cores. Support for the Linux kernel and Debian requires an MMU, hence it is needed in the cores. %todo include LUT comparison with enabled/disabled
 
 \subsection{User/Supervisor modes}
 The \texttt{useUser} and \texttt{useSupervisor} options control the addition of hardware privilege levels. All RISC-V CPUs have the machine privilege level (M-mode). Code run in M-mode is able to execute any instruction, including those that would result in the CPU becoming trapped permanently. M-mode is intended to be used for managing secure execution done in lower privilege levels, completely trusted code that must be run on M-mode for system setup or for embedded systems where M-mode is the only privilege level implemented.
@@ -37,7 +37,7 @@ User mode (U-mode) can be added to the CPU to provide a secure environment where
 
 Supervisor mode (S-mode) can also be added. This privilege level fits between U-mode and M-mode, adding many S-mode registers that only M-mode had previously, such as \texttt{SPP} for the previous privilege mode or \texttt{stvec} for the supervisor trap vector address and mode. S-mode is utilised most often by OSs that want to be able to run applications on top of themselves and keep functioning, so must prevent such applications from being able to maliciously or accidentally interfere with it's operation.
 
-As the SoC designed by this project will never be put into a production environment, we can remove user and supervisor modes, executing all programs in machine mode. While this removes all hardware security from the system, the only code being run will be either written by the author or from trusted open-source projects. In addition to this, the system is completely isolated and would be unable to cause any damage if compromised, only connected to another system via serial.
+As the SoC designed by this project will never be put into a production environment, we can disable user and supervisor mode options. However a requirement for virtual memory and implementing the MMU in RocketCore is the inclusion of supervisor mode, and so the the extensions will be implemented regardless of the options. While the U and S-modes are implemented, we have chosen to execute all code in M-mode. This removes hardware security from the system, but the only code being run will be either written by the author or from trusted open-source projects. In addition to this, the system is completely isolated and would be unable to cause any damage if compromised, only connected to another system via serial. There are also sections of the code that must be run in M-mode, like fetching from performance monitoring registers, and it is easier to execute fully in M-mode than to write traps and handlers in assembly to create M-mode code to fetch data from the registers separately.
 
 \subsection{Hypervisor mode}
 \texttt{useHypervisor} option enables the hypervisor mode extension. Hypervisor mode extends supervisor mode, adding additional virtualisation. S-mode becomes HS-mode, where a hypervisor program or hosting-capable OS runs, and changes some registers typically accessed from \texttt{Sxxx} to \texttt{Hxxx}, such as \texttt{SIE} to \texttt{HIE}. A virtualisation bit is added and set when the CPU is executing a guest OS, and this changes the HS-mode and U-mode to VS-mode and VU-mode. An additional layer of address translation is enabled when this occurs, as well as the registers accessed in VS-mode returning to the \texttt{Sxxx} versions.
@@ -220,13 +220,21 @@ A small BTB (Branch Target Buffer) with 28 entries and a BHT (Branch History Tab
 
 The multiplier divider unit is small, without unrolling or early out. 
 
-\subsection{Final Design Scenarios}
-The custom big core implements the RV64IMAZicsrZifenceiC ISA.
+\subsection{Final Design Scenario Limitations}
+Both custom cores implement the RV64IMAZicsrZifenceiC ISA, with MMU. Experimentation with FPUs was attempted, and different cores successfully synthesised and implemented on the FPGA with various FPU configurations. However, attempting to synthesis a dual core design was unsuccessful - the amount of LUTs required for such a design was always greater than the amount available on the FPGA, no matter the reductions made in other options like cache.
 
-\subsubsection{FPU} %todo show overutilisation
-Experimentation with FPUs was attempted, and cores successfully synthesised and implemented on the FPGA. However, attempting to synthesis a dual core design was unsuccessful - the amount of LUTs required for such a design was always greater than the amount available on the FPGA, no matter the reductions made in other options like cache. As such, the final design has not been able to include an FPU and we dropped support for the F and D ISA extensions.
+Cores with different ISAs were considered as a solution to this approach. We first verified that this was possible, and successfully implemented a dual core SoC with a large FPU-enabled core and a small FPU-disabled core. While a functional hardware design, the software design for this SoC would be much harder due to the differing ISAs. Running the Linux kernel would also be more complicated: a custom kernel can be compiled to use soft-float (running floating point operations using integer ALU and registers) instead of FPU hardware, this would prevent the FPU actually being used by Linux and programs run within the OS, thus rendering the FPU in the big core pointless.
+
+Another option considered was to share the FPU between cores, but research into this showed RocketChip is not capable of such designs. As such, the final design has not been able to include an FPU and we dropped support for the F and D ISA extensions.
+
+%todo include FPU resource comparisons here
+
+\subsection{Final Design Scenario - Custom Big Core}
+\subsubsection{Multiplier} %todo include code listing and relevant design screenshots
+The multiplier in the big core is unrolled by a factor of 16. With a 
 
 \subsection{Final Design Scenario - Custom Small Core}
+
 
 \chapter{Test Design}
 \label{ch:test_design}
