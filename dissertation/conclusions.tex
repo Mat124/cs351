@@ -1,8 +1,27 @@
-\chapter{Conclusions}
-\label{ch:conclusions}
+\chapter{Evaluation}
+\label{ch:evaluation}
+Overall, this project was a success. All 'must' and 'should' objectives have been completed, with progress and semi-success being made towards the 'could' objectives. We have achieved the following in the project:
 
-The project is a success. Summarise what you have done and accomplished.
+\begin{enumerate}
+    \item A deep understanding of RISC-V and RocketCore
+    \item Design of two parameterised RocketCore CPUs, implementing the RV64IMAC ISA
+    \item Design and implementation of heterogeneous and homogeneous SoCs utilising the custom CPUs
+    \item Design of bare-metal benchmarking software for RISC-V SoCs
+    \item Attempts to run Linux on the heterogeneous SoC
+    \item Comparison between the implemented homogeneous and heterogeneous SoCs in FPGAs
+    \item Conclusions about the viability and use of heterogeneous SoCs in FPGAs
+\end{enumerate}
+
+The heterogeneous SoC (B1S1) implements a big core and small core in a single SoC, combining low power draw and high performance potential. Both cores implement the RV64IMAC ISA, with the main differences being increased multiplier size, larger cache, and changes to branch prediction. When implemented in FPGAs, the B1S1 SoC shows increases of up to 33\% in performance/power and performance/area ratio when compared to homogeneous designs, but the overall conclusion that has been drawn is having more, larger cores is the best approach in an FPGAs. We believe this to be caused by the FPGA's mostly static power draw and medium variances in area usage, favouring designs that maximise the resources used on the FPGA.
+
+However, there was some evidence (\ref{fig:soc_temps}) that if only the S core in the B1S1 SoC is used, the power draw is less than that of a B1 SoC. As the B1S1 has a maximum increase in performance of 88\% over the B1, heterogeneous SoCs in FPGAs may be able to demonstrate similar properties to heterogeneous designs in silicon.
 
 \section{Future work}
+\subsection{Linux}
+Achieving the objective to get Linux to run on the heterogeneous SoC would be extremely beneficial to the project. This would enable the project to be used as the basis for adding RISC-V heterogeneous support in Linux. Even just having the Linux kernel running with support for POSIX interface would massively increase the amount of software that could be run on the SoC, and make it become a viable compute platform for embedded systems or similar.
 
-Suggest what projects might follow up on this. The suggestions here should \textbf{not} be small improvements to what you have done, but more substantial work that can now be done thanks to the work you have done or research questions that have resulted from your work.
+\subsection{Coremark}
+Coremark\cite{coremark} is a multi-platform benchmarking tool, aiming to allow comparisons between all CPUs. Compiling coremark for bare-metal and running it in SMP mode on the designed SoCs would provide performance data that could then be used to compare against mainstream processors. This could provide more information about the actual usability of the designed SoCs and potential capabilities - knowing the level of performance that can be expected will better inform us of the possible use-cases for the designed SoCs.
+
+\subsection{Power Measurement}
+Accurately measuring power during benchmarking would provide a definitive answer to the viability of heterogeneous SoCs in FPGAs. The current conclusion is based on static power data and implied power draw from temperature measurements. Being able to make a stronger conclusion that heterogeneous designs are useful in FPGAs would be very useful to the project.

@@ -22,11 +22,11 @@
 	\fancyhead[RE]{\textit{\@author}}
 	\fancyhead[RO]{\thepage}
 	\fancyhead[LO]{\textit{\@title}}
-}
+} 
 \makeatother
 
 %%%%%%%%%%%%%%%%%%%%
-
+ 
 \begin{document}
 
 \input{../common/titlepage.tex}
@@ -37,16 +37,17 @@
 
 \tableofcontents
 
-\input{introduction.tex}
+\input{introduction.tex} 
 \input{background.tex}
 \input{project_management.tex}
 \input{tools_technologies.tex}
 \input{design_implementation.tex}
-\input{testing.tex}
-%\input{conclusions.tex}
-%\input{evaluation.tex}
+\input{analysis.tex}
+\input{conclusions.tex}
 
-\bibliographystyle{../common/plainnat}
-\bibliography{../common/bibliography}
+\bibliographystyle{ieeetr}
+\bibliography{bibliography}
+
+\input{appendix.tex}
 
 \end{document}

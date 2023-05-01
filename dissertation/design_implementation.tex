@@ -2,12 +2,7 @@
 \label{ch:hw_design}
 We decided to design and implement two unique RocketCore CPUs for the heterogeneous SoC. These will be in two separate tiles with cache coherency. The aim will be for each core to implement the RV64GC ISA, the 'general-purpose' RISC-V ISA, as well as an MMU (Memory Management Unit) in order to run a full Debian Linux OS, if only with terminal interaction. The following code snippets show the parameterisation options available for the RocketCore CPU and the tiles they lie within.
 
-\begin{figure}
-    \includegraphics[]{./img/core_params.png}
-\end{figure}
-\begin{figure}
-    \includegraphics[]{./img/rocket_tile_params.png}
-\end{figure}
+%todo include core params and tile params code listing here
 
 The micro-architecture specification of RocketCore is not publicised. This means implementation details of the core are not documented, and makes understanding how the core functions a difficult task. For example, to identify what changes occur when \texttt{useVM} is enabled instead of disabled, we must search through the source code (10000+ lines of Chisel\cite{}) to find where the value is used and what it is used for - what other variables are impacted, how they change, etc. The following sections identify and discuss what customisation is available, with parameters common between all cores specified and parameters that will be varied during testing identified.
 %todo cite above
@@ -16,7 +11,7 @@ The micro-architecture specification of RocketCore is not publicised. This means
 The \texttt{bootFreqHz} core variable does not impact the actual frequency of the core, but instead is added to the device tree structure, so that an operating system is able to read the boot frequency of the CPU. The actual frequency of the cores are defined by clocks generated in the Vivado project. These can be edited, with supported frequencies of 160, 125, 100, 80, 62.5, 50, 40, 31.25, 25, and 20 MHz. The clock manager uses phase locked loop and counters to divide the central clock from the FPGA crystal oscillator. This reduces the available frequencies to those that can be formed from that central clock using the dividers. The Nexys-A7-100t has a crystal capable of generating up to 50 MHz, and is shared between all cores in the RocketChip SoC. This prevents individual clock frequencies for cores, one of the significant changes between big and small cores in typical heterogeneous systems. This will severely limit the actual performance difference between cores, as well as the power consumption difference. This also prevents frequency scaling as the RocketChip SoC does not have control of the clock generator, another key part of modern power saving measures. These are limitations of FPGAs as a platform and the SoC generators used in this project.
 
 \begin{figure}
-    \includegraphics[]{./img/single_clock_rocketchip.png}
+    \includegraphics[width=0.8\textwidth]{./img/single_clock_rocketchip.png}
 \end{figure}
 
 \subsection{ALU}
@@ -217,7 +212,7 @@ Another option considered was to share the FPU between cores, but research into 
 \section{Final Design Scenario - Custom Big Core}
 \subsection{Multiplier} %todo include code listing and relevant design screenshots
 The multiplier in the big core is unrolled by a factor of 16. This results in a minimum cycle latency of 4 cycles (assuming no early out), much fewer than 64 cycles with no unrolling. Multiplication early out is also enabled, giving an actual minimum cycle latency of 2 cycles.
-%todo ensure div unroll correct
+
 Division has been unrolled by a factor of 4, bringing minimum cycle latency to 16 cycles. Further increases in division unrolling incurred failing time constraints, preventing further unrolling without decreasing the clock frequency. We decided that compromising on clock frequency would bring greater reductions in real-world performance than increasing division performance would, though if only measuring in cycles this would only be a benefit to the CPU. Division early out is enabled and gives a minimum cycle latency of 3 cycles when applicable.
 
 \subsection{Instruction Cache}
@@ -229,7 +224,7 @@ The data cache is the same 64 sets of 4 ways for a total of 16KB. The TLB is als
 \subsection{BTB and BHT}
 A large BTB has been instantiated in the big core, with 28 entries, 14 match bits, 6 pages and 6 return address stacks. This is a standard large BTB for RocketCore, and should provide reasonable performance for our use. The BTB also contains the BHT, which has been implemented with the example big RocketCore values: 512 entries, counter length of 1, history length of 8 and 3 history bits.
 
-\subsection{Code Listing} %todo add code listing here
+\subsection{Code Listing}
 \begin{minted}{verilog}
 class WithNHetBigCores(n: Int, overrideIdOffset: Option[Int] = None) 
     extends Config((site, here, up) => {
@@ -308,7 +303,7 @@ class WithNHetBigCores(n: Int, overrideIdOffset: Option[Int] = None)
 \end{minted}
 
 \section{Final Design Scenario - Custom Small Core}
-\subsection{Multiplier} %todo include code listing and relevant design screenshots
+\subsection{Multiplier}
 The multiplier in the small core hasn't been unrolled, giving a minimum cycle latency of 64. This has been done to reduce area and power usage - each unroll adds another bit multiplier logic section, so moving from no unrolling to a factor 2 unrolling would double the amount of logic between the stages, factor 4 unroll giving a 4x increase, etc. The early out option has also been disabled, meaning there can be no reduction in multiplier cycle times, but again reducing the multiplier logic in the core. Division similarly has no unrolling and no early out, and has a minimum cycle latency of 64.
 
 \subsection{Instruction Cache}
@@ -393,14 +388,12 @@ class WithNHetSmallCores(n: Int, overrideIdOffset: Option[Int] = None)
 
 \chapter{Software Design}
 \label{ch:software_design}
-\section{Bootloader}
-\section{Linker Scripts}
 \section{Benchmark Design}
 Several benchmarks have been designed to measure the performance of the CPU. As the main differences between the big and small cores are in the multiplier, cache and branching, we will assess performance in these areas. To achieve this, four benchmark programs have been written: addition, matrix multiplication, memory stress and a mixed branching benchmark.
 
-Measurement of performance will be done in cycles instead of seconds. This decision has been made as the frequency of all cores is the same in the FPGA and so measuring the difference between cycles will be equivalent to measuring the actual time taken for the programs to run.
+Measurement of performance will be done in cycles instead of seconds. This decision has been made as the frequency of all cores is the same in the FPGA and so measuring the difference between cycles will be equivalent to measuring the actual time taken for the programs to run. The current cycle count held in the \texttt{mcycle} register is read, benchmark started and the cycle register read again, with the difference between the two reads being the amount of cycles the benchmark took.
 
-Each benchmark starts by identifying the current CPU through the hart register and starting the other hart if the system is multicore and core is hart 0. The current cycle count held in the \texttt{mcycle} register is read, benchmark started and the cycle register read again, with the difference between the two reads being the amount of cycles the benchmark took.
+Each benchmark starts by identifying the current CPU through the hart register and starting the other hart if the system is multicore and core is hart 0. This is achieved by writing the address of the start of RAM to the machine trap vector \texttt{mtvec} in the bootloader. The core with hart 0 acts as the main core, and branches to the RAM setup code in the bootloader. All other harts continue into a loop, where they wait for interrupt and then jump to the \texttt{mtvec} when the machine software interrupt (\texttt{msip}) is set for that hart. Once hart 0 has loaded RAM with the benchmark code from the SD card (or the code has been loaded via serial transfer and the debug module), the hart starts the benchmark and generates a software interrupt, prompting the other hart(s) to jump to the RAM and start running the benchmark.
 
 The benchmarks are also customisable with varying array sizes and iterations. 100 iterations of each benchmark are completed by default - this is to reduce the amount of impact run to run variance has on the final results.
 
@@ -454,7 +447,7 @@ void io_iter(uint32_t *in_a, uint32_t *in_b, uint32_t *res) {
 \end{minted}
 
 \subsection{Mixed Benchmark}
-The mixed benchmark is designed to perform computations, data fetching and branches in a way representative of real-world applications.
+The mixed benchmark is designed to perform computations, data fetching and branches in a way representative of real-world applications. The time dominant operations will likely be the branching and multiplication, as missed branches force most pipeline results from the missed branch to be ignored, wasting cycles, and multiplication is a very cycle heavy operation.
 
 \begin{minted}{C}
 void mixed_bench(uint32_t *in_a, uint32_t *in_b, uint32_t *res, uint32_t sel) {
@@ -477,7 +470,68 @@ void mixed_bench(uint32_t *in_a, uint32_t *in_b, uint32_t *res, uint32_t sel) {
 }
 \end{minted}
 
-\subsection{title}
-\section{Software Verification}
-Software verification was completed using the Spike RISC-V emulator. Spike is a functional model of a RISC-V processor, with options for number of harts (hardware threads, RISC-V representation of logical cores), and ISA. Spike supports all major ratified extensions, as well as some still in the proposed stage. As our final hardware implementation uses RV64IMAZicsrZifenceiC, we can set Spike to simulate the same core type when invoking from the command line.
+\section{Verification}
+Software verification was completed using the Spike RISC-V emulator. Spike is a functional model of a RISC-V processor, with options for number of harts (hardware threads, RISC-V representation of logical cores), and ISA. Spike supports all major ratified extensions, as well as some still in the proposed stage, allowing us to simulate a RISC-V processor with the exact ISA as our implemented designs.
 
+\subsection{Benchmark Changes}
+Some changes had to be made to the benchmarks in order to run them on spike, due to differences in how we are using the platforms. Spike uses it's own bootloader, and runs programs in the U-mode once loaded. This is an issue, as our benchmark code accesses M-mode only registers to count cycles and identify the hart the code is running on. When the benchmark code is run on Spike, we generate illegal instruction errors and do not get an output. No changes are necessary to the computation loops or variable setup.
+
+To fix this, we use the Spike proxy kernel. This is a single process execution environment, providing function calls with higher permissions to binaries running on top of the kernel. It is specifically designed for use in RISC-V implementations with limited IO and proxies them to a host computer - in the case of Spike, this is the machine running the simulation. The proxy kernel was compiled for RV64IMAC, the same ISA as our CPU designs.
+
+We removed code requesting the hart ID, as this is not strictly necessary to test benchmark functionality. Writing output over serial was changed to using the standard \texttt{printf} to write to the \texttt{stdout} of the proxy kernel, appearing in the host machine's terminal where Spike was launched. Read from the machine CSRs was changed to using the \texttt{rdcycle} pseudo-instruction, requesting the process host read and return the cycle data for us.
+
+\begin{figure}[h!]
+    \centering
+    \begin{minted}{C}
+int main(void) {
+    printf("\n");
+
+    uint32_t in_a[SIZE*SIZE];
+    uint32_t in_b[SIZE*SIZE];
+    uint32_t res[SIZE*SIZE];
+
+    for (int i = 0; i < SIZE*SIZE; i++) {
+        in_a[i] = i;
+        in_b[i] = i;
+    }
+
+    printf("Hart 0: Starting addition benchmark size %d\n", SIZE);
+    uint64_t start_cycles, end_cycles;
+    asm volatile ("rdcycle %0" : "=r" (start_cycles));
+    for (int i = 0; i < ITERS; i++) {
+        addition_iter((uint32_t *) in_a, (uint32_t *) in_b, (uint32_t *) res);
+    }
+    asm volatile ("rdcycle %0" : "=r" (end_cycles));
+
+    printf("Hart 0: Addition benchmark took %d cycles\n", end_cycles 
+        - start_cycles);
+
+    return 0;
+}
+    \end{minted}
+    \caption{Setup code for addition benchmark on Spike}
+    \label{fig:spike-setup-code}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/spike_output.png}
+    \caption{Spike addition benchmark at size 40}
+    \label{fig:spike_test_output}
+\end{figure}
+
+\section{Linux}
+Adding Linux compatibility to the SoC would massively increase the potential use cases, and ease of use. While it is possible to compile programs to bare-metal code, this is very difficult and presents problems when users want to run high-level languages, such as Python, or run multiple programs at once. An OS running on the SoC would provide a huge number of features to the programmer and allow automatic SMP.
+
+Some progress was made towards running Linux on the heterogeneous SoC. We identified the requirements for running a mainstream distribution of Linux and designed the CPUs to meet this minimum requirement. The requirements are lower for just the Linux kernel - if necessary, virtual memory can be disabled when compiling the kernel and this allows MMU-less CPUs to run the kernel, reducing the entry barrier. We created a Linux kernel config that didn't require an FPU, instead using softfloat to complete floating point calculations in software and compiled this for use on the B1S1 SoC. A supervisor binary interface is required for Linux to run, and we attempted to use OpenSBI, which was included in the vivado-risc-v\cite{vivado-risc-v} project. This was met with some success: OpenSBI was successfully started and the Linux kernel is started. The kernel identifies both CPUs in the system and begins setup, with SMP enabled. However, several illegal instruction errors occur while the file system is being initialised, and result in a failure to start the OS. 
+
+An \texttt{initramfs} shell starts, which allows us some basic bash commands inside of a terminal, but this is a clear failure to run Linux.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/linux_smp.png}
+    \includegraphics[width=\textwidth]{img/illegal_inst.png}
+    \includegraphics[width=\textwidth]{img/initramfs_shell.png}
+    \caption{Attempts to run Linux}
+    \label{fig:linux_attempt}
+\end{figure}
