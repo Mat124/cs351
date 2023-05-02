@@ -1,7 +1,7 @@
 \chapter{Tools and Technologies}
 \label{ch:tools_technologies}
-\section{FPGA \& Vivado}
-The FPGA development board used by this project is the Nexys-A7-100t. This development board uses the XC7A100T FPGA chip, with 128MiB of external RAM, a large array of IO ports and onboard peripherals. The FPGA chip contains 63400 LUTs, 126800 flip-flops, 2860Kb of block RAM and 240 DSP slices. This should be adequate for the design of a small SoC, as explained in \ref{rocketchip}, but there is risk that this won't be the case. As such, an alternative FPGA development board has been identified as the Nexys-Video. This uses the XC7A200T FPGA chip, with 134600 LUTs, 269200 flip-flops, 13Mb of block RAM and 740 DSP slices, and will definitely be adequate for our use case.
+\section{FPGA \& Tools}
+The FPGA development board used by this project is the Nexys-A7-100t\footnote{https://digilent.com/reference/programmable-logic/nexys-a7/start}. This development board uses the XC7A100T FPGA chip, with 128MiB of external RAM, a large array of IO ports and onboard peripherals. The FPGA chip contains 63400 LUTs, 126800 flip-flops, 2860Kb of block RAM and 240 DSP slices\cite{nexys-a7-100t}. This should be adequate for the design of a small SoC, as explained in \ref{rocketchip}, but there is risk that this won't be the case. As such, an alternative FPGA development board has been identified as the Nexys-Video\footnote{https://digilent.com/reference/programmable-logic/nexys-video/start}. This uses the XC7A200T FPGA chip, with 134600 LUTs, 269200 flip-flops, 13Mb of block RAM and 740 DSP slices\cite{nexys-video}, and will definitely be adequate for our use case.
 
 Connection to the FPGA development board will be made using USB serial and minicom\cite{minicom}, a basic serial interaction terminal program.
 
@@ -11,9 +11,25 @@ Once HDL has been generated for the SoC, we need to generate the bitstream to im
 \label{rocketchip}
 The aim of the project is to design a fully functioning RISC-V SoC that could potentially run a full OS, and attempting this from nothing would take much longer than the project timeline and is beyond the current skills of the author. Therefore, an SoC generator will be used, where we can create configuration files and semi-custom designs using high-level descriptions that have the full HDL created by software. We need a full SoC to be generated, not just CPUs, to include IO controllers, cache and other necessary components for a full computing system. Due to how niche RISC-V currently is, there is only one suitable candidate: RocketChip\cite{rocketchip}.
 
-The RocketChip generator is a collection of smaller sub-generators that create parameterised components. These components fit together to create the full SoC via standard interfaces, allowing any design implementing the interfaces to be easily exchanged for another in the design. The most important to this project is the core, and RocketChip can generate three core types: RocketCore, BOOM and Z-scale Core. RocketCore and BOOM are both parameterisable, allowing a semi-custom design to be created. The default BOOM core (RV64GC) utilises around 148500 LUTs for a single core, and so cannot be used with the available FPGA. A default RocketCore (RV64GC) uses approximately 38300 LUTs for a single core, and 27500 for each default core after, giving 65800 LUTs necessary for a dual core design. This is greater than the number of LUTs in the FPGA, and so we will have to design cores smaller than these defaults. Exact details of the parameterisation options available in RocketCore are in the \ref{ch:design} chapter.
+The RocketChip generator is a collection of smaller sub-generators that create parameterised components. These components fit together to create the full SoC via standard interfaces, allowing any design implementing the interfaces to be easily exchanged for another in the design. The most important to this project is the core, and RocketChip can generate three core types: RocketCore, BOOM\cite{boom-core} and Z-scale Core. RocketCore and BOOM are both parameterisable, allowing a semi-custom design to be created. The default BOOM core (RV64GC) utilises around 148500 LUTs for a single core, and so cannot be used with the available FPGA. A default RocketCore (RV64GC) uses approximately 38300 LUTs for a single core, and 27500 for each default core after, giving 65800 LUTs necessary for a dual core design. This is greater than the number of LUTs in the FPGA, and so we will have to design cores smaller than these defaults. Exact details of the parameterisation options available in RocketCore are in the \ref{ch:hw_design} chapter.
 
-CPUs instantiated in a RocketChip SoC are inside of 'tiles' following the TileLink architecture. This contains them inside standard interface sections, and allows them to be added to them same bus with cache coherency both within and without the tiles. %todo include rocketcore overview ehre - 6 stages, in order, etc
+CPUs instantiated in a RocketChip SoC are inside of 'tiles' following the TileLink architecture\cite{tilelink}. This contains them inside standard interface sections and allows CPUs to be added to the same bus with cache coherency between all cores, as can be seen in figure \ref{fig:rocketchip_example}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/rocketchip_soc.png}
+    \caption{The layout of a RocketChip SoC with a BOOM and RocketCore\cite{rocketchip}}
+    \label{fig:rocketchip_example}
+\end{figure}
+
+The RocketCore itself is a 6-stage pipelined processor with in-order issue and execution, implementing up to the RV64GC ISA. Without extensions (RV64I), the RocketCore processor has a single pipeline. Adding the floating point unit introduces the FP pipeline which runs in tandem with the integer pipeline, but only a single instruction can be issued to either the integer or floating point pipelines at once.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{img/rocketcore_pipeline.png}
+    \caption{RocketCore pipeline with optional FPU\cite{rocketchip}}
+    \label{fig:rocketcore_pipeline}
+\end{figure}
 
 \section{vivado-risc-v}
 \label{vivado-risc-v}
@@ -21,9 +37,9 @@ This projects extends an existing repository vivado-risc-v\cite{vivado-risc-v}. 
 
 The main use of vivado-risc-v is board support and Vivado project generation. The HDL for the design is generated by the external tools, for example RocketChip to generate the SoC, sifive-cache to add more cache and testchipip for clocks, and the vivado-risc-v scripts add these to a new Vivado project setup for the FPGA board in use. vivado-risc-v also contains board-specific drivers for ethernet, SD card readers, serial connections and the device tree structure data for each board. These are necessary to connect the implemented SoC on the FPGA to the rest of the hardware on the development board.
 
-\section{Chisel} %todo - talk more about chisel
+\section{Chisel}
 \label{chisel}
-RocketChip is written in Chisel, a Scala-based HDL. 
+RocketChip is written in Chisel\footnote{https://www.chisel-lang.org/}, an open-source Scala-based HDL\cite{chisel}. Chisel describes synthesisable circuits in the same layout and precision as traditional HDLs, but with the full capabilities of the functional Scala programming language. This allows circuits to be described using functional and object-orientated methods, such as classes and recursive functions. Other beneficial features of Scala are the type system, inference of widths and data types, libraries and control flow that can change which sections of logic are used when generating the output Verilog. The output Verilog is synthesisable for FPGAs.
 
 \section{Bare-metal code}
 Once the SoC is implemented, the project aims to analyse the performance against homogeneous designs. As such, a testing suite needs to be developed to measure various performance metrics, running as bare-metal code. Bare-metal involves running as the only program on the system other than the bootloader - this means there is no OS to manage memory, threads, files and others. The code must also be written in a language than can be directly compiled to machine or byte-code, eliminating language such as Python or Java which are interpreted or run on a virtual machine. The languages with most support for RISC-V bare-metal are C/C++ and Rust, as these are often used for embedded programming. Another option is to write RISC-V assembly directly. This would make compilation much simpler, but prevents the use of libraries and is much harder to write complex programs - though it is likely the testing suite will be quite simple in order to accurately measure individual characteristics of the SoC.

@@ -19,8 +19,8 @@ These designs have been chosen to give a spread of performance and area, compari
     \label{fig:B2_lut_overuse}
 \end{figure}
 
-\subsection{Resource Usage} %todo finish this
-\subsubsection{B1}
+\subsection{Resource Usage}
+\subsubsection{B1 - 1 big core homogeneous SoC}
 \begin{center}
 \begin{tabular}{c c c c}
     Resource & Utilisation & Available & Utilisation \% \\
@@ -38,7 +38,9 @@ These designs have been chosen to give a spread of performance and area, compari
 \end{tabular}
 \end{center}
 
-\subsubsection{S2}
+A visualisation of the FPGA usage can be seen in fig \ref{fig:b1_fpga}.
+
+\subsubsection{S2 - 2 small cores homogeneous SoC}
 \begin{center}
 \begin{tabular}{c c c c}
     Resource & Utilisation & Available & Utilisation \% \\
@@ -56,7 +58,9 @@ These designs have been chosen to give a spread of performance and area, compari
 \end{tabular}
 \end{center}
 
-\subsubsection{B1S1}
+A visualisation of the FPGA usage can be seen in fig \ref{fig:s2_fpga}.
+
+\subsubsection{B1S1 - 1 big core, 1 small core heterogeneous SoC}
 \begin{center}
 \begin{tabular}{c c c c}
     Resource & Utilisation & Available & Utilisation \% \\
@@ -73,6 +77,8 @@ These designs have been chosen to give a spread of performance and area, compari
     \hline
 \end{tabular}
 \end{center}
+
+A visualisation of the FPGA usage can be seen in fig \ref{fig:b1s1_fpga}.
 
 \subsubsection{Graphical Comparison}
 \begin{figure}[h!]
@@ -95,6 +101,17 @@ These designs have been chosen to give a spread of performance and area, compari
     \hline
 \end{tabular}
 \end{center}
+
+During the place and route process, the Vivado tools perform power estimation. This is based on resource usage, clock frequencies, routing paths, etc and calculates the expected average power draw by each resource type and providing a total power draw. The total power draw varies very little between each SoC design. This is due to the large amount of power dedicated to non-CPU components in the SoC. For instance, all SoCs have the same IO connectivity. From the Vivado power report for the B1S1 SoC in \ref{fig:b1s1_power}, we can see that IO takes 0.525W, 40\% of the total power draw for the system. The S2 SoC and B1 SoC also use the same 0.525W for IO (\ref{fig:b1_power} \ref{fig:s2_power}), resulting in the power differences from core changes having a smaller overall impact on the percentage change in total power draw than if IO draw was smaller.
+
+The variant power between the SoCs depends on the clock, signal, logic and BRAM power. This gives a much larger difference between the power draws of the SoCs, with the B1S1 drawing 23\% more variant power than the S2, and drawing 42\% more than the B1. This is a much larger percentage difference than when measuring total power draw and could be used to claim the changes in power are significant when comparing the SoCs, but this isn't strictly true. Comparing only the variant power draw between SoCs to make claims about the viability of heterogeneous SoCs in FPGAs ignores the actual power draw that would occur during use, which is what affects the performance/power ratio. It is inconsequential that the B1S1 cores draw 42\% more power than the B1 cores, when the total power drawn by the board has only a 6\% increase between the SoCs.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/Variant Power.png}
+    \caption{Variant power between SoCs}
+    \label{fig:variant_power}
+\end{figure}
 
 \subsection{Performance and Temperature}
 Performance data was collected using multiple runs of each benchmark. Each benchmark-SoC combination was loaded to the FPGA and run five times, with the average cycle counts being recorded for each. The benchmarks can be varied in size, and we ran several versions to identify how a longer benchmark with larger amounts of data affected the performance of each SoC.
@@ -206,9 +223,10 @@ B1S1 again achieves the best performance/power ratio for all sizes, with the rel
 For the mixed benchmark, the SoC with the best performance/power ratio is B1S1 for all sizes. The general trend is increasing the size and amount of cores leads to a larger increase in performance than estimated power consumption.
 
 \section{Conclusions}
+\label{sec:conclusion}
 Taken in isolation, the data appears to show that heterogeneous designs show massive benefits over homogeneous designs. Compared to the B1 SoC, the B1S1 achieves performance increases of up to 88\%, for only 6\% increase in power consumption and a 15-30\% resource utilisation increase depending on the exact resource being compared. The B1S1 also produces up to 38\% performance increase compared to the S2 SoC, with just 4\% increase in power and ~5\% resource utilisation increase. 
 
-However, we believe these results do not show heterogeneous designs being superior in FPGAs, but that larger designs that use up more of the FPGA chip provide better performance/power and performance/area ratios. This is due to a large amount of the area utilised by the FPGA being from the rest of the SoC (from IO hardware, memory, etc) that is static between core designs, resulting in a large amount of static power draw between SoCs. The measurement of performance/power is also flawed in that the power is based on estimations by software. While this can provide an estimated ordering of power consumption - we can be relatively sure that a design with greater predicted power than another will actually consume more - this value is unsuitable for use in supporting claims that an SoC is purely better than another in terms of performance/power ratio.
+However, we believe these results do not show heterogeneous designs being superior in FPGAs, but that larger designs that use up more of the FPGA chip provide better performance/power and performance/area ratios. This is due to a large amount of the area utilised by the FPGA being from the rest of the SoC (from IO hardware, memory, etc) that is static between core designs, resulting in a large amount of static power draw between SoCs. As such, attempting to fully utilise all resources on the FPGA is expected to provide a better performance/power ratio, as the performance increases faster than the area and power usage increases. The measurement of performance/power is also flawed in that the power is based on estimations by software. While this can provide an estimated ordering of power consumption - we can be relatively sure that a design with greater predicted power than another will actually consume more - this value is unsuitable for use in supporting claims that an SoC is purely better than another in terms of performance/power ratio.
 
 \begin{figure}[h!]
     \centering
@@ -217,6 +235,6 @@ However, we believe these results do not show heterogeneous designs being superi
     \label{fig:perf_v_power}
 \end{figure}
 
-Figure \ref{fig:perf_v_power} shows that while there are huge differences in performance between the SoCs, the inverse changes to power result in each SoC being a pareto point.
+Figure \ref{fig:perf_v_power} shows that while there are huge differences in performance between the SoCs, the inverse changes to power result in each SoC being a pareto point. As such, each SoC design is not improved upon in one metric without deterioration in another and it could be argued that each SoC could be optimal for different situations. It should also be considered that the actual changes in power draw are extremely small, at the level of mW, so it would be incredibly unlikely for a scenario to have a power budget that falls in between the range of SoC power. As such, it would be logical to always use the B1S1 SoC in situations where the SoC fits within the power constraints, due to the massive increases in performance compared to power.
 
-The data in figure \ref{fig:soc_temps} shows some evidence that heterogeneous designs in FPGAs may provide benefits when only the S core is in use. There is a measurable, though small, decrease in temperature when using only the S core in the B1S1 SoC. The temperature is very close to the S1 SoC, implying the power draw by the idle B core is very small and in situations where only the S core is necessary, the B1S1 SoC could have a tangible decrease in power draw. Some flaws in the testing methodology could mean this result is not accurate. For instance, the benchmark fully leverages any CPU it is running on and would run faster on a faster core. This means the B core is actually doing more work than the S core in the same time-period and does not have the same workload over the benchmark duration. Decreasing the amount of work done by the B core to the same amount as the S core could see the temperature reduce to the same as if the S core was in use, meaning the S core has no benefit in the system. Another issue with this conclusion is the use of temperature to estimate power draw. This is undoubtedly inaccurate, and it would be hard to justify conclusions based on a temperature difference of less than 2$^{\circ}$C.
+The data in figure \ref{fig:soc_temps} shows some evidence that heterogeneous designs in FPGAs may provide benefits when only the S core is in use. There is a measurable, though small, decrease in temperature when using only the S core in the B1S1 SoC. The temperature is very close to the S1 SoC, implying the power draw by the idle B core is very small and in situations where only the S core is necessary, the B1S1 SoC could have a tangible decrease in power draw. This is the expected behaviour of a heterogeneous system and would indicate that heterogeneous designs can improve the power-efficiency of systems in FPGAs. However, some flaws in the testing methodology could mean this result is not accurate. For instance, the benchmark fully leverages any CPU it is running on and would run faster on a higher-performing core. This means the B core is doing more work than the S core in the same time period, and does not have the same workload over the benchmark duration. Decreasing the amount of work done by the B core to the same amount as the S core could see the temperature reduce to the same as if the S core was in use, meaning the S core has no benefit in the system. Another issue with this conclusion is the use of temperature to estimate power draw. This is undoubtedly inaccurate, and it would be hard to justify conclusions based on a temperature difference of less than 2$^{\circ}$C. We can overall conclude there is weak evidence to support heterogeneous systems being able to improve the power efficiency of systems in FPGAs, but verification using accurate power measurements during benchmarking would allow this to become a more definitive statement with stronger evidence.

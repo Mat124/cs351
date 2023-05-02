@@ -1,3 +1,65 @@
+@article{openpiton,
+author = {Balkind, Jonathan and McKeown, Michael and Fu, Yaosheng and Nguyen, Tri and Zhou, Yanqi and Lavrov, Alexey and Shahrad, Mohammad and Fuchs, Adi and Payne, Samuel and Liang, Xiaohua and Matl, Matthew and Wentzlaff, David},
+title = {OpenPiton: An Open Source Manycore Research Framework},
+year = {2016},
+issue_date = {May 2016},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {44},
+number = {2},
+issn = {0163-5964},
+url = {https://doi.org/10.1145/2980024.2872414},
+doi = {10.1145/2980024.2872414},
+journal = {SIGARCH Comput. Archit. News},
+month = {mar},
+pages = {217-232},
+numpages = {16},
+keywords = {manycore, multicore, open-source}
+}
+
+@inproceedings{10.1145/2872362.2872414,
+author = {Balkind, Jonathan and McKeown, Michael and Fu, Yaosheng and Nguyen, Tri and Zhou, Yanqi and Lavrov, Alexey and Shahrad, Mohammad and Fuchs, Adi and Payne, Samuel and Liang, Xiaohua and Matl, Matthew and Wentzlaff, David},
+title = {OpenPiton: An Open Source Manycore Research Framework},
+year = {2016},
+isbn = {9781450340915},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2872362.2872414},
+doi = {10.1145/2872362.2872414},
+abstract = {Industry is building larger, more complex, manycore processors on the back of strong institutional knowledge, but academic projects face difficulties in replicating that scale. To alleviate these difficulties and to develop and share knowledge, the community needs open architecture frameworks for simulation, synthesis, and software exploration which support extensibility, scalability, and configurability, alongside an established base of verification tools and supported software. In this paper we present OpenPiton, an open source framework for building scalable architecture research prototypes from 1 core to 500 million cores. OpenPiton is the world's first open source, general-purpose, multithreaded manycore processor and framework. OpenPiton leverages the industry hardened OpenSPARC T1 core with modifications and builds upon it with a scratch-built, scalable uncore creating a flexible, modern manycore design. In addition, OpenPiton provides synthesis and backend scripts for ASIC and FPGA to enable other researchers to bring their designs to implementation. OpenPiton provides a complete verification infrastructure of over 8000 tests, is supported by mature software tools, runs full-stack multiuser Debian Linux, and is written in industry standard Verilog. Multiple implementations of OpenPiton have been created including a taped-out 25-core implementation in IBM's 32nm process and multiple Xilinx FPGA prototypes.},
+booktitle = {Proceedings of the Twenty-First International Conference on Architectural Support for Programming Languages and Operating Systems},
+pages = {217–232},
+numpages = {16},
+keywords = {manycore, open-source, multicore},
+location = {Atlanta, Georgia, USA},
+series = {ASPLOS '16}
+}
+
+
+@misc{picorv32,
+  author = {Yoysys},
+  title = {PicoRV32 - A Size-Optimized RISC-V CPU},
+  howpublished = {\url{https://github.com/YosysHQ/picorv32}},
+  year = {2019},
+}
+@misc{lim2018juxtapiton,
+      title={JuxtaPiton: Enabling Heterogeneous-ISA Research with RISC-V and SPARC FPGA Soft-cores}, 
+      author={Katie Lim and Jonathan Balkind and David Wentzlaff},
+      year={2018},
+      eprint={1811.08091},
+      archivePrefix={arXiv},
+      primaryClass={cs.AR}
+}
+@article{herov2,
+author = {Kurth, Andreas and Forsberg, Bjorn and Benini, Luca},
+year = {2022},
+month = {12},
+pages = {1-14},
+title = {HEROv2: Full-Stack Open-Source Research Platform for Heterogeneous Computing},
+volume = {33},
+journal = {IEEE Transactions on Parallel and Distributed Systems},
+doi = {10.1109/TPDS.2022.3189390}
+}
 @TechReport{UCAM-CL-TR-972,
   author =	 {Guo, Xuan and Bates, Daniel and Mullins, Robert and
           	  Bradbury, Alex},
@@ -67,6 +129,13 @@ BOOM is written in roughly 9,000 lines of the hardware construction language Chi
   title        = {The RISC-V Instruction Set Manual, Volume I: User-Level ISA, Document Version 2.2},
   year         = {2017}
 }
+@manual{u54,
+  author       = {SiFive Inc.},
+  title        = {U54-MC Core Complex Manual},
+  year         = {2017},
+  howpublished = {\url{https://static.dev.sifive.com/U54-MC-RVCoreIP.pdf}}
+}
+
 @misc{debianriscv,
   author       = {Manuel A. Fernandez Montecelo, Karsten Merker},
   howpublished = {\url{https://wiki.debian.org/RISC-V}},
@@ -84,6 +153,81 @@ BOOM is written in roughly 9,000 lines of the hardware construction language Chi
    doi={10.1109/TVLSI.2019.2926114},
    ISSN={1557-9999},
    month={Nov},
+}
+@book{steveheath,
+  author      = {Steve Heath},
+  title       = {Microprocessor Architectures: RISC, CISC and DSP},
+  publisher   = {Newnes},
+  year        = {2014},
+  edition     = {2nd},
+  isbn        = {9781483295534}
+}
+@inproceedings{10.5555/2665671.2665692,
+author = {Venkat, Ashish and Tullsen, Dean M.},
+title = {Harnessing ISA Diversity: Design of a Heterogeneous-ISA Chip Multiprocessor},
+year = {2014},
+isbn = {9781479943944},
+publisher = {IEEE Press},
+booktitle = {Proceeding of the 41st Annual International Symposium on Computer Architecuture},
+pages = {121–132},
+numpages = {12},
+location = {Minneapolis, Minnesota, USA},
+series = {ISCA '14}
+}
+
+@article{heterogeneous-multicore,
+author = {Venkat, Ashish and Tullsen, Dean M.},
+title = {Harnessing ISA Diversity: Design of a Heterogeneous-ISA Chip Multiprocessor},
+year = {2014},
+issue_date = {June 2014},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {42},
+number = {3},
+issn = {0163-5964},
+url = {https://doi.org/10.1145/2678373.2665692},
+doi = {10.1145/2678373.2665692},
+journal = {SIGARCH Comput. Archit. News},
+month = {jun},
+pages = {121–132},
+numpages = {12}
+}
+
+
+
+@misc{fpga,
+  author = {Digilent Inc.},
+  title = {What is an FPGA?},
+  howpublished = {\url{https://digilent.com/blog/what-is-an-fpga/}}
+}
+
+@book{digitaldesign,
+  author = {Sarah L. Harris and David Money Harris},
+  title = {Digital Design and Computer Architecture},
+  publisher = {Morgan Kaufmann},
+  year = {2022},
+  isbn = {9780128200643}
+}
+
+@book{hennessey,
+  author      = {John L. Hennessy and David A. Patterson},
+  title       = {Computer Architecture: A Quantitative Approach},
+  publisher   = {Morgan Kaufmann},
+  year        = {2012},
+  edition     = {5th},
+  isbn        = {9780123838728}
+}
+@misc{spike,
+  author = {RISC-V International},
+  title = {Spike RISC-V ISA Simulator},
+  year = {2019},
+  howpublished = {\url{https://github.com/riscv-software-src/riscv-isa-sim}}
+}
+@misc{proxykernel,
+  author = {RISC-V International},
+  title = {RISC-V Proxy Kernel},
+  year = {2019},
+  howpublished = {\url{https://github.com/riscv-software-src/riscv-pk}}
 }
 @misc{applem2,
   author       = {Apple},
@@ -106,10 +250,15 @@ BOOM is written in roughly 9,000 lines of the hardware construction language Chi
   title        = {SiFive TileLink Specification},
   howpublished = {\url{https://sifive.cdn.prismic.io/sifive/7bef6f5c-ed3a-4712-866a-1a2e0c6b7b13_tilelink_spec_1.8.1.pdf}}
 }
-@msic{nexys-a7-100t,
+@misc{nexys-a7-100t,
   author       = {Digilent},
   title        = {Nexys A7 Reference Manual},
   howpublished = {\url{https://digilent.com/reference/programmable-logic/nexys-a7/reference-manual}}
+}
+@misc{nexys-video,
+  author       = {Digilent},
+  title        = {Nexys Video Reference Manual},
+  howpublished = {\url{https://digilent.com/reference/programmable-logic/nexys-video/reference-manual}}
 }
 @book{case-method-fasttrack,
   author         = {Dai Clegg, Richard Barker},
@@ -157,4 +306,16 @@ BOOM is written in roughly 9,000 lines of the hardware construction language Chi
   journal         = {IOP Conference Series: Materials Science and Engineering},
   title           = {Design And Optimization Of Floating Point Division And Square Root Using Minimal Device Latency},
   year            = {2021}
+}
+@misc{abs_fpga,
+  author = {FPGAEmu},
+  title = {FPGA Review and Emulation},
+  howpublished = {\url{https://fpgaemu.readthedocs.io/en/latest/emulation.html}}
+}
+@techreport{chisel,
+  author = {Jonathan Bachrach, Huy Vo, Brian Richards, Yunsup Lee, Andrew Waterman, Rimas Avižienis, John Wawrzynek, Krste Asanovic},
+  title = {Chisel: Constructing Hardware in a Scala Embedded Language},
+  institution = {EECS Department, University of California, Berkeley},
+  year = {2012},
+  URL = {https://people.eecs.berkeley.edu/~krste/papers/chisel-dac2012.pdf},
 }

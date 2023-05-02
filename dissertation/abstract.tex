@@ -1,14 +1,14 @@
 %Your abstract goes here. This should be about 2-3 paragraphs summarising the motivation for your project and the main outcomes (software, results, etc.) of your project. 
 
 \begin{abstract}
-    % needs rewriting to < 200 words
-    This project aims to design and analyse heterogeneous RISC-V SoCs implemented in FPGAs. Many devices have varying performance needs during use, and always aim to minimise power usage. Heterogeneous architectures aim to provide a solution that delivers high performance and high efficiency by combining highly efficient CPU cores (S cores) and highly powerful CPU cores (B cores) in a single processor. When performing background, low priority tasks the S cores are used and the B cores are idle/off, resulting in low power usage. When there are demanding, high priority tasks the B and S cores are used, resulting in higher performance than if just the S cores existed.
+% needs rewriting to < 200 words
+This project aims to design and analyse heterogeneous RISC-V SoCs implemented in FPGAs. Heterogeneous architectures provide high performance and high efficiency by combining highly efficient CPU cores (S cores) and highly powerful CPU cores (B cores) in a single processor. When performing low intensity tasks, only the S cores are used, resulting in low power usage. When performing high intensity tasks, the B and S cores are used to achieve higher performance than if there were just S cores. There is minimal research into general-purpose RISC-V processors implementing a heterogeneous architecture in FPGAs, so the project performs some novel research.
 
-    The CPU cores implement the RISC-V ISA, an open-standard ISA with support for Linux. There is minimal research into general purpose RISC-V processors implementing a heterogeneous architecture, so the project will perform some novel research. The S and B cores will be designed using the RocketChip generator, that generates HDL for a configurable RISC-V SoC.
-
-    The designed heterogeneous SoC has been be benchmarked and compared to homogenous designs in terms of size, power draw and performance. Based on these metrics, heterogeneous RISC-V SoCs implemented in FPGAs have limited benefits over homogenous, with a B and S processor providing small decreases in power and area usage for significantly less performance compared to a two B processor, but giving much increased performance for small power and area increases compared to a two S processor.
+Custom S and B cores have been designed using the RocketChip generator, a parameterisable RISC-V SoC generator, and implemented in SoCs on FPGAs. A heterogeneous (B1S1) SoC has been benchmarked and compared to homogenous designs. The data collected shows up to 38\% performance increase for 4\% increase in power and ~5\% resource utilisation increase compared to an S2 SoC and up to 88\% performance increase for 6\% power and 30\% area increases compared to a B1 SoC. When utilising only the S core, the B1S1 also appears to show a lower power draw than a B1 SoC.
 \end{abstract}
 
-\begin{keywords}
-    
-\end{keywords}
+\textbf{Keywords:} \\
+RISC-V, CPU architecture, processor, SoC system-on-chip, heterogeneous, RocketCore, FPGA, Chisel, hardware design, benchmarking \\
+
+\textbf{Acknowledgements:} \\
+I am grateful to my supervisor Eduardo W\"achter for his support and direction throughout the project, and his excellent response times to emails. He went beyond what is required, willing to provide feedback outside of University working times and only hours before the deadline.

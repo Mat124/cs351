@@ -1,7 +1,7 @@
 \chapter{Introduction}
 \label{ch:introduction}
 
-The aim of this project is to design a heterogeneous system on a chip (SoC) using the RISC-V open standard ISA\cite{riscv-1}\cite{riscv-2}. Once designed, the SoC should be implementable on an FPGA and be able to execute bare-metal C code and assembly with SMP, allowing all cores to execute code at the same time.
+The aim of this project is to design a heterogeneous system on a chip (SoC) using the RISC-V open standard ISA\cite{riscv-1}\cite{riscv-2}. Once designed, the SoC should be implementable on an FPGA and be able to execute bare-metal C code and assembly with simultaneous multi-processing (SMP), allowing all cores to execute code at the same time.
 
 \section{Motivation}
 Designing a processor is a complex challenge. They need to be power efficient to reduce the cost of running the system, as well as providing adequate processing power when required. Often one is sacrificed to improve the other: for instance, energy efficiency is often reduced due in designs of large processors containing multiple cores. Due to the increased size and complexity, more power has to be supplied to achieve the same performance as a smaller processor.
@@ -10,9 +10,11 @@ A heterogeneous CPU attempts to solve this issue by combining dissimilar core de
 
 This has been used extensively in many mobile devices, and increasingly in larger devices like laptops. The Apple M2 processor\cite{applem2} is one such example, implementing 4 high-performance cores and 4 energy-efficient cores. These are arranged in a hybrid configuration similar to ARM DynamIQ and big.LITTLE\cite{biglittle}, allowing cores to dynamically be assigned work that best fits them. In Apple's design, both cores are capable of executing the same code, with the performance core benefitting from much increased cache and other proprietary changes to increase it's speed over the efficiency core. 
 
+\clearpage
+
 \section{Objectives}
 %One sentence summary of your project. Followed by a short list of concrete objectives:
-The overall aim is design a heterogeneous SoC containing two types of RISC-V core that can execute bare-metal C code and assembly with SMP. Objectives have been labelled according to the MoSCoW method\cite{case-method-fasttrack} to indicate their importance and expected completion.
+The overall aim is to design a heterogeneous SoC containing two types of RISC-V core that can execute bare-metal C code and assembly with SMP. Objectives have been labelled according to the MoSCoW method\cite{case-method-fasttrack} of must, could, should and won't to indicate their importance and expected completion.
 \begin{figure}[h!]
     \centering
     \begin{enumerate}
